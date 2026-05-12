@@ -44,6 +44,10 @@ Do not put protocol semantics here if they belong in the draft itself.
 - `protocol-narrative-direction.md`: working direction for the draft's
   end-to-end opening story, including clearer actor language that distinguishes
   device-side participants from human household actors
+- `effective-policy-direction.md`: working direction for the baseline
+  Effective Policy Object, including association-freshness semantics, mapped
+  company-specific taxonomies, and the distinction between policy-instance
+  provenance and collected-data provenance
 - `template-operations.md`: local render and eventual publication workflow notes
 - `source-material.md`: protocol-relevant design artifacts in `habanero-dev`
 - `scripts/`: local WSL helper scripts copied from the architecture repo

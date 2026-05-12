@@ -350,18 +350,23 @@ purposes, actions, sources, and destinations.
 Purpose:
 
 * return the effective policy instance currently applicable to the participant;
-* return enough provenance information to identify what was acknowledged; and
-* communicate the freshness limit for current association.
+* return enough policy-instance provenance information to identify what was
+  acknowledged; and
+* communicate the association-freshness limit for current association.
 
 A successful response MUST be an Effective Policy Object.
 
-A successful response SHOULD include provenance fields that let later
+A successful response SHOULD include policy-instance provenance fields that let later
 inspection distinguish the household baseline from any more specific inputs,
 such as:
 
 * `base_policy_id`
 * `override_policy_id` when a more specific policy layer was applied
 * `computed_at`
+
+These fields describe the provenance of the returned policy instance itself.
+They do not describe the provenance of data later collected, transformed, or
+derived by participant devices or services.
 
 This operation returns the policy instance the participant is expected to
 acknowledge.
@@ -418,6 +423,9 @@ A compact term identifier is a text string whose meaning is determined by:
 
 The term identifier itself is the primary semantic hook.
 Taxonomy release metadata remains secondary validation context.
+Deployments MAY use company-specific or other non-core taxonomies when their
+terms map to the shared core primitives and are declared through the applicable
+taxonomy context.
 
 ## Taxonomy Context Object
 
@@ -521,8 +529,8 @@ The effective policy object represents the policy instance the participant must
 acknowledge.
 It contains the policy identifier, hash, rule set, and
 freshness information.
-It SHOULD also contain provenance fields that make later recordkeeping and
-inspection meaningful.
+It SHOULD also contain policy-instance provenance fields that make later
+recordkeeping and inspection meaningful.
 
 It contains:
 
@@ -549,6 +557,8 @@ It contains:
 
 An Effective Policy Object MUST contain exactly one of `renew_by` or
 `renewal_interval`.
+These fields govern association freshness for the participant-facing lifecycle.
+They do not define abstract policy validity outside that lifecycle.
 If any rule uses a non-core compact prefix, the `taxonomy` object is REQUIRED.
 
 ## Policy Rule Object

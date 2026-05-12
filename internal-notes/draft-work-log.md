@@ -79,6 +79,10 @@ It is not part of the rendered Internet-Draft.
   decision to tighten the draft's opening actor language and end-to-end story
   so that `PPD participant` is clearly device-side rather than a human
   household actor.
+- Added `internal-notes/effective-policy-direction.md` to capture the
+  distinction between association freshness and policy validity, support for
+  company-specific taxonomies mapped to the core primitives, and the boundary
+  between policy-instance provenance and collected-data provenance.
 - Rewrote the draft opening sections to clarify the participant-facing
   narrative, actor language, and end-to-end lifecycle between the home-side PPD
   service endpoint and the device-side participant.
