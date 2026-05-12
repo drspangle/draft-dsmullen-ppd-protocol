@@ -344,9 +344,10 @@ association if it can retrieve and acknowledge the applicable policy instance.
 
 The request body MUST be a Device Declaration Object.
 
-A declaration MAY include supported values for the taxonomy dimensions defined
-in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as supported data types,
-purposes, actions, sources, and destinations.
+A declaration carries one or more descriptive statements that use the taxonomy
+dimensions defined in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as data type,
+purpose, action, source, and destination.
+The taxonomy document defines the meaning and composition of those dimensions.
 
 ## Effective Policy Retrieval
 
@@ -499,9 +500,12 @@ It contains:
 
 The declaration object carries participant-supplied capability or data-handling
 information.
-At minimum it contains `device_id` and `declaration_id`.
-Additional fields SHOULD use the shared taxonomy dimensions defined in
+At minimum it contains `device_id`, `declaration_id`, and a non-empty
+`statements` array.
+Declaration statements use the shared taxonomy dimensions defined in
 {{?I-D.draft-dsmullen-ppd-taxonomy}}.
+The taxonomy document defines the meaning and composition of those dimensions;
+this protocol document defines only how such statements are carried.
 
 The declaration is descriptive only.
 It MUST NOT include normative policy verdicts such as allow or deny.
@@ -514,19 +518,38 @@ It contains:
   stable identifier for this declaration instance;
 * `taxonomy` (optional, Taxonomy Context Object):
   release context and any required non-core prefix declarations;
-* `supported_data_types` (optional, array of compact term identifiers):
-  data types the participant handles;
-* `supported_purposes` (optional, array of compact term identifiers):
-  purposes the participant claims to support;
-* `supported_actions` (optional, array of compact term identifiers):
-  actions the participant performs or may request;
-* `supported_sources` (optional, array of compact term identifiers):
-  participant-described data sources; and
-* `supported_destinations` (optional, array of compact term identifiers):
-  participant-described destinations or handling targets.
+* `statements` (required, non-empty array of Declaration Statement Objects):
+  participant-supplied descriptive cases stating which taxonomy-defined
+  combinations apply to this participant.
 
-If a declaration uses any non-core compact prefix in these arrays, the
+If a declaration uses any non-core compact prefix in its statements or
+constraints, the
 `taxonomy` object is REQUIRED.
+
+## Declaration Statement Object
+
+A Declaration Statement Object is an atomic descriptive statement inside a
+Device Declaration Object.
+It mirrors the same core dimensions used by policy rules so that participant
+assertions can be compared at the same grain, but it MUST NOT include a
+normative `effect`.
+
+It contains:
+
+* `statement_id` (required, text):
+  stable identifier for the statement within the declaration instance;
+* `data_type` (required, compact term identifier):
+  data category to which the statement applies;
+* `purpose` (required, compact term identifier):
+  purpose associated with the described handling;
+* `action` (required, compact term identifier):
+  handling action the participant performs or may request;
+* `source` (required, compact term identifier):
+  source context for the handled data;
+* `destination` (required, compact term identifier):
+  destination or handling target described by the participant; and
+* `constraints` (optional, Constraints Object):
+  structured qualifiers that refine the statement.
 
 ## Effective Policy Object
 
@@ -591,28 +614,31 @@ It contains:
   destination or handling target covered by the rule;
 * `effect` (required, text):
   normative rule effect, currently one of `allow` or `deny`; and
-* `constraints` (optional, Rule Constraints Object):
+* `constraints` (optional, Constraints Object):
   structured qualifiers that refine the rule.
 
 An Effective Policy Object SHOULD NOT contain two Policy Rule Objects with the
 same core dimensions but different `effect` values.
 Such contradictions should be resolved before the effective policy is returned.
 
-## Rule Constraints Object
+## Constraints Object
 
-The Rule Constraints Object preserves a structured extension point for rule
-qualifiers without requiring a large qualifier language in the baseline draft.
+The Constraints Object preserves a structured extension point for qualifiers
+without requiring a large qualifier language in the baseline draft.
+It is shared by declaration statements and policy rules.
 
 The initial standardized members are:
 
 * `retention` (optional, compact term identifier):
-  retention-class qualifier for the allowed or denied handling; and
+  retention-class qualifier for the described or allowed or denied handling;
+  and
 * `locality` (optional, compact term identifier):
-  locality or trust-boundary qualifier for the allowed or denied handling.
+  locality or trust-boundary qualifier for the described or allowed or denied
+  handling.
 
 Future specifications or deployment profiles MAY define additional structured
 constraint members.
-A Rule Constraints Object MUST NOT be treated as an unstructured free-form text
+A Constraints Object MUST NOT be treated as an unstructured free-form text
 field.
 
 ## Policy Acknowledgment Object

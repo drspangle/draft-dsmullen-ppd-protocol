@@ -48,6 +48,9 @@ Do not put protocol semantics here if they belong in the draft itself.
   Effective Policy Object, including association-freshness semantics, mapped
   company-specific taxonomies, and the distinction between policy-instance
   provenance and collected-data provenance
+- `declaration-shape-direction.md`: working direction for replacing flat
+  declaration capability arrays with atomic descriptive statements while
+  keeping combination semantics in the taxonomy work
 - `template-operations.md`: local render and eventual publication workflow notes
 - `source-material.md`: protocol-relevant design artifacts in `habanero-dev`
 - `scripts/`: local WSL helper scripts copied from the architecture repo

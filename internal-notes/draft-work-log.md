@@ -86,6 +86,10 @@ It is not part of the rendered Internet-Draft.
 - Clarified that the protocol draft should defer most relationship-to-existing-
   work discussion to the architecture draft, with the protocol draft carrying
   only a short cross-reference to that broader comparison.
+- Added `internal-notes/declaration-shape-direction.md` to capture the
+  decision to replace flat declaration capability arrays with atomic
+  descriptive statements, while leaving combination semantics to the taxonomy
+  work.
 - Refined the Effective Policy Object provenance naming to prefer
   `applied_policy_id` over the narrower `override_policy_id` label.
 - Rewrote the draft opening sections to clarify the participant-facing
@@ -95,3 +99,7 @@ It is not part of the rendered Internet-Draft.
   defining baseline object fields, compact term identifiers, taxonomy context,
   atomic policy rules with `effect`, optional structured `constraints`, and the
   Problem Details based error object.
+- Refined the declaration model so a Device Declaration Object now carries a
+  non-empty `statements` array of atomic descriptive cases instead of flat
+  `supported_*` capability arrays, and generalized the shared constraints
+  structure so both declaration statements and policy rules can use it.
