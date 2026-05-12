@@ -293,14 +293,7 @@ Purpose:
 * advertise baseline feature support; and
 * communicate security expectations before registration or policy retrieval.
 
-A successful response SHOULD include:
-
-* `service_uri`
-* `protocol_version`
-* `taxonomy_versions`
-* `declaration_supported`
-* `ack_supported`
-* `security_mode`
+A successful response MUST be a Service Metadata Object.
 
 ## Registration
 
@@ -312,9 +305,7 @@ Purpose:
   participant; and
 * bind the participant's current protocol identity to the registration state.
 
-The request body MUST include:
-
-* `device_id`
+The request body MUST be a Device Registration Object.
 
 The request body SHOULD include, when available and appropriate for the
 deployment:
@@ -346,10 +337,7 @@ Declarations are optional.
 A participant that does not submit a declaration can still establish
 association if it can retrieve and acknowledge the applicable policy instance.
 
-The request body MUST include:
-
-* `device_id`
-* `declaration_id`
+The request body MUST be a Device Declaration Object.
 
 A declaration MAY include supported values for the taxonomy dimensions defined
 in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as supported data types,
@@ -365,13 +353,7 @@ Purpose:
 * return enough provenance information to identify what was acknowledged; and
 * communicate the freshness limit for current association.
 
-A successful response MUST include:
-
-* `policy_id`
-* `policy_hash`
-* `taxonomy_version`
-* `rules`
-* either `renew_by` or `renewal_interval`
+A successful response MUST be an Effective Policy Object.
 
 A successful response SHOULD include provenance fields that let later
 inspection distinguish the household baseline from any more specific inputs,
@@ -395,11 +377,7 @@ Purpose:
 * record a protected acknowledgment that a participant received a specific
   policy instance.
 
-The request body MUST include:
-
-* `device_id`
-* `policy_id`
-* `policy_hash`
+The request body MUST be a Policy Acknowledgment Object.
 
 The acknowledgment payload is a receipt signal only.
 It MUST NOT be interpreted as a claim that the participant can satisfy every
@@ -409,7 +387,9 @@ that behavior MUST be defined separately from the baseline acknowledgment.
 
 A successful acknowledgment response SHOULD include:
 
-* the resulting association state; and
+* the resulting association state, where `association_status` if present SHOULD
+  be one of `not_associated`, `associated`, `needs_reassociation`,
+  `stale_association`, or `broken`; and
 * the next `renew_by` or `renewal_interval` value to be used for maintaining
   current association.
 
@@ -418,18 +398,63 @@ MUST be rejected.
 
 # Message Objects
 
+The following object definitions are normative for baseline interoperability.
+Unless otherwise stated:
+
+* identifiers such as `device_id`, `declaration_id`, `policy_id`, and
+  `rule_id` are opaque text strings;
+* timestamp fields use RFC 3339 date-time strings {{?RFC3339}};
+* `policy_hash` uses the form `algorithm:value`, and baseline
+  implementations MUST support `sha256`; and
+* `renewal_interval` is a positive integer count of seconds.
+
+## Compact Term Identifiers
+
+Taxonomy-bearing fields use compact term identifiers.
+A compact term identifier is a text string whose meaning is determined by:
+
+* a reserved core prefix defined by the protocol or taxonomy work; or
+* an explicit extension-prefix declaration in a Taxonomy Context Object.
+
+The term identifier itself is the primary semantic hook.
+Taxonomy release metadata remains secondary validation context.
+
+## Taxonomy Context Object
+
+The Taxonomy Context Object carries optional vocabulary-release context and any
+required non-core prefix declarations.
+
+It MAY include:
+
+* `release`:
+  a text identifier for the taxonomy release or profile in view when the object
+  was produced; and
+* `prefixes`:
+  an object mapping non-core compact prefixes to stable namespace identifiers.
+
+Reserved core prefixes MUST NOT be remapped in `prefixes`.
+A Taxonomy Context Object is REQUIRED whenever non-core compact prefixes appear
+in the containing object.
+
 ## Service Metadata Object
 
 The service metadata object describes a candidate endpoint before deeper
 interaction.
-It SHOULD include:
+It contains:
 
-* `service_uri`
-* `protocol_version`
-* `taxonomy_versions`
-* `declaration_supported`
-* `ack_supported`
-* `security_mode`
+* `service_uri` (required, URI string):
+  canonical participant-facing service URI;
+* `protocol_version` (required, text):
+  protocol version or profile identifier for the participant-facing contract;
+* `declaration_supported` (required, boolean):
+  whether the service accepts Device Declaration Objects;
+* `ack_supported` (required, boolean):
+  whether the service accepts Policy Acknowledgment Objects;
+* `security_mode` (required, text):
+  deployment security profile or trust mode identifier; and
+* `taxonomy_versions` (optional, array of text):
+  taxonomy release identifiers understood by the service for validation and
+  reproducibility.
 
 ## Device Registration Object
 
@@ -439,6 +464,24 @@ The stable identifier is `device_id`.
 Other metadata fields are deployment-dependent and do not replace the stable
 participant identifier.
 
+It contains:
+
+* `device_id` (required, text):
+  stable participant identifier for this device-side actor;
+* `manufacturer` (optional, text):
+  participant-reported vendor name;
+* `model` (optional, text):
+  participant-reported model name or number;
+* `firmware_version` (optional, text):
+  participant-reported software or firmware version;
+* `hostname` (optional, text):
+  participant-reported hostname when relevant to the deployment;
+* `mac_address` (optional, text):
+  participant-reported link-layer address when the deployment profile permits
+  it; and
+* `ip_address` (optional, text):
+  participant-reported network address when the deployment profile permits it.
+
 ## Device Declaration Object
 
 The declaration object carries participant-supplied capability or data-handling
@@ -447,14 +490,115 @@ At minimum it contains `device_id` and `declaration_id`.
 Additional fields SHOULD use the shared taxonomy dimensions defined in
 {{?I-D.draft-dsmullen-ppd-taxonomy}}.
 
+The declaration is descriptive only.
+It MUST NOT include normative policy verdicts such as allow or deny.
+
+It contains:
+
+* `device_id` (required, text):
+  participant identifier to which the declaration applies;
+* `declaration_id` (required, text):
+  stable identifier for this declaration instance;
+* `taxonomy` (optional, Taxonomy Context Object):
+  release context and any required non-core prefix declarations;
+* `supported_data_types` (optional, array of compact term identifiers):
+  data types the participant handles;
+* `supported_purposes` (optional, array of compact term identifiers):
+  purposes the participant claims to support;
+* `supported_actions` (optional, array of compact term identifiers):
+  actions the participant performs or may request;
+* `supported_sources` (optional, array of compact term identifiers):
+  participant-described data sources; and
+* `supported_destinations` (optional, array of compact term identifiers):
+  participant-described destinations or handling targets.
+
+If a declaration uses any non-core compact prefix in these arrays, the
+`taxonomy` object is REQUIRED.
+
 ## Effective Policy Object
 
 The effective policy object represents the policy instance the participant must
 acknowledge.
-It contains the policy identifier, hash, taxonomy version, rule set, and
+It contains the policy identifier, hash, rule set, and
 freshness information.
 It SHOULD also contain provenance fields that make later recordkeeping and
 inspection meaningful.
+
+It contains:
+
+* `policy_id` (required, text):
+  stable identifier for the policy instance to be acknowledged;
+* `policy_hash` (required, text):
+  stable content hash for the policy instance;
+* `rules` (required, array of Policy Rule Objects):
+  normative rule set for this effective policy instance;
+* `renew_by` (optional, RFC 3339 date-time string):
+  absolute deadline by which current association must be renewed if this field
+  is used;
+* `renewal_interval` (optional, positive integer seconds):
+  bounded interval after response generation within which current association
+  must be renewed if this field is used;
+* `taxonomy` (optional, Taxonomy Context Object):
+  release context and any required non-core prefix declarations for rule terms;
+* `base_policy_id` (optional, text):
+  identifier for the household baseline policy used in this effective result;
+* `override_policy_id` (optional, text):
+  identifier for a more specific applied policy layer when present; and
+* `computed_at` (optional, RFC 3339 date-time string):
+  time at which the effective policy instance was computed or materialized.
+
+An Effective Policy Object MUST contain exactly one of `renew_by` or
+`renewal_interval`.
+If any rule uses a non-core compact prefix, the `taxonomy` object is REQUIRED.
+
+## Policy Rule Object
+
+A Policy Rule Object is an atomic normative statement inside an Effective
+Policy Object.
+
+The baseline rule model uses singular core dimensions.
+When multiple cases must be expressed, they are represented as multiple rules
+rather than array-valued core dimensions inside one rule.
+
+It contains:
+
+* `rule_id` (required, text):
+  stable identifier for the rule within the policy instance;
+* `data_type` (required, compact term identifier):
+  data category to which the rule applies;
+* `purpose` (required, compact term identifier):
+  purpose for which the data handling is considered;
+* `action` (required, compact term identifier):
+  handling action covered by the rule;
+* `source` (required, compact term identifier):
+  source context for the handled data;
+* `destination` (required, compact term identifier):
+  destination or handling target covered by the rule;
+* `effect` (required, text):
+  normative rule effect, currently one of `allow` or `deny`; and
+* `constraints` (optional, Rule Constraints Object):
+  structured qualifiers that refine the rule.
+
+An Effective Policy Object SHOULD NOT contain two Policy Rule Objects with the
+same core dimensions but different `effect` values.
+Such contradictions should be resolved before the effective policy is returned.
+
+## Rule Constraints Object
+
+The Rule Constraints Object preserves a structured extension point for rule
+qualifiers without requiring a large qualifier language in the baseline draft.
+
+The initial standardized members are:
+
+* `retention` (optional, compact term identifier):
+  retention-class qualifier for the allowed or denied handling; and
+* `locality` (optional, compact term identifier):
+  locality or trust-boundary qualifier for the allowed or denied handling.
+
+Future specifications or deployment profiles MAY define additional structured
+constraint members.
+A Rule Constraints Object MUST NOT be treated as an unstructured free-form text
+field.
 
 ## Policy Acknowledgment Object
 
@@ -463,14 +607,41 @@ instance and policy hash.
 Deployments that claim strong accountability properties MUST protect the
 acknowledgment against forgery, replay, and stale-policy confusion.
 
+It contains:
+
+* `device_id` (required, text):
+  participant identifier acknowledging receipt;
+* `policy_id` (required, text):
+  policy instance identifier being acknowledged; and
+* `policy_hash` (required, text):
+  content hash of the acknowledged policy instance.
+
+This object is evidentiary only.
+It is a receipt for a specific policy instance and MUST NOT be interpreted as a
+claim of compatibility or compliance.
+
 ## Error Object
 
-Error responses SHOULD use a structured error object with at least:
+Error responses SHOULD use `application/problem+json` and a structured error
+object with at least:
 
-* `code`
-* `detail`
+* `type`:
+  problem type identifier, including PPD-specific problem types when
+  applicable;
+* `title`:
+  short problem summary;
+* `status`:
+  HTTP status code for this error; and
+* `detail`:
+  human-readable explanation when useful.
 
-A deployment MAY include a hint about whether retry is appropriate.
+A deployment MAY include:
+
+* `instance`:
+  problem-instance identifier; and
+* `retryable`:
+  boolean hint about whether retry is appropriate.
+
 Error responses MUST NOT leak more household or participant metadata than is
 necessary to explain the failure.
 
@@ -485,9 +656,13 @@ At minimum, participants need to handle:
 * `403 Forbidden` for authenticated participants that are not authorized for
   the requested operation;
 * `404 Not Found` for missing participant or policy state;
-* `409 Conflict` for conflicting participant identity state or acknowledgments
-  that do not match the current policy instance; and
-* `5xx` errors for transient service or policy-authority failures.
+* `409 Conflict` for lifecycle or policy-instance conflicts, such as
+  acknowledgments that do not match the current policy instance;
+* `422 Unprocessable Content` for well-formed content that cannot be processed
+  semantically, such as unsupported or unresolvable taxonomy terms;
+* `503 Service Unavailable` for transient service or policy-authority
+  unavailability; and
+* other `5xx` errors for unexpected service failures.
 
 A participant that receives an error during renewal or reassociation MUST NOT
 assume that it still has current association unless the service endpoint has

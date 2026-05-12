@@ -79,3 +79,10 @@ It is not part of the rendered Internet-Draft.
   decision to tighten the draft's opening actor language and end-to-end story
   so that `PPD participant` is clearly device-side rather than a human
   household actor.
+- Rewrote the draft opening sections to clarify the participant-facing
+  narrative, actor language, and end-to-end lifecycle between the home-side PPD
+  service endpoint and the device-side participant.
+- Made the operations and message-object sections more explicit and normative by
+  defining baseline object fields, compact term identifiers, taxonomy context,
+  atomic policy rules with `effect`, optional structured `constraints`, and the
+  Problem Details based error object.
