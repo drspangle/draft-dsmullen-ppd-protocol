@@ -83,6 +83,8 @@ It is not part of the rendered Internet-Draft.
   distinction between association freshness and policy validity, support for
   company-specific taxonomies mapped to the core primitives, and the boundary
   between policy-instance provenance and collected-data provenance.
+- Refined the Effective Policy Object provenance naming to prefer
+  `applied_policy_id` over the narrower `override_policy_id` label.
 - Rewrote the draft opening sections to clarify the participant-facing
   narrative, actor language, and end-to-end lifecycle between the home-side PPD
   service endpoint and the device-side participant.

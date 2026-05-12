@@ -361,7 +361,7 @@ inspection distinguish the household baseline from any more specific inputs,
 such as:
 
 * `base_policy_id`
-* `override_policy_id` when a more specific policy layer was applied
+* `applied_policy_id` when a more specific policy layer was applied
 * `computed_at`
 
 These fields describe the provenance of the returned policy instance itself.
@@ -550,7 +550,7 @@ It contains:
   release context and any required non-core prefix declarations for rule terms;
 * `base_policy_id` (optional, text):
   identifier for the household baseline policy used in this effective result;
-* `override_policy_id` (optional, text):
+* `applied_policy_id` (optional, text):
   identifier for a more specific applied policy layer when present; and
 * `computed_at` (optional, RFC 3339 date-time string):
   time at which the effective policy instance was computed or materialized.

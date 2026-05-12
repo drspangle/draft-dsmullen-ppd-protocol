@@ -69,7 +69,7 @@ when:
 The baseline provenance fields in the Effective Policy Object are:
 
 - `base_policy_id`
-- `override_policy_id`
+- `applied_policy_id`
 - `computed_at`
 
 These fields describe the provenance of the policy instance itself.
