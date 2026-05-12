@@ -38,6 +38,12 @@ Do not put protocol semantics here if they belong in the draft itself.
 - `error-model-direction.md`: working direction for using standard HTTP problem
   details plus a small PPD-specific problem vocabulary, without stretching HTTP
   status semantics or inventing a custom error envelope
+- `policy-rule-shape-direction.md`: working direction for keeping baseline
+  declarations descriptive, effective policy normative, and baseline rule
+  effects scoped only to the household-originated policy object
+- `protocol-narrative-direction.md`: working direction for the draft's
+  end-to-end opening story, including clearer actor language that distinguishes
+  device-side participants from human household actors
 - `template-operations.md`: local render and eventual publication workflow notes
 - `source-material.md`: protocol-relevant design artifacts in `habanero-dev`
 - `scripts/`: local WSL helper scripts copied from the architecture repo

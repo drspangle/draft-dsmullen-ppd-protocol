@@ -30,7 +30,15 @@ author:
 
 --- abstract
 
-This document specifies a participant-facing protocol for Privacy Preference Declarations (PPDs) in home networks.  It defines baseline operations for endpoint metadata confirmation, participant registration, optional participant declaration, effective-policy retrieval, policy acknowledgment, renewal, and reassociation.  This document complements the PPD architecture and taxonomy documents by defining the message and sequencing behavior needed for interoperable policy signaling.
+This document specifies a participant-facing protocol for Privacy Preference
+Declarations (PPDs) in home networks.  The protocol is between a home-side PPD
+service endpoint and a device-side actor, formally the `PPD participant`, which
+is a device or a service acting on behalf of a device.  It defines baseline
+operations for endpoint metadata confirmation, participant registration,
+optional participant declaration, effective-policy retrieval, policy
+acknowledgment, renewal, and reassociation.  This document complements the PPD
+architecture and taxonomy documents by defining the message and sequencing
+behavior needed for interoperable policy signaling.
 
 --- middle
 
@@ -45,12 +53,22 @@ This document specifies the participant-facing protocol behavior that sits
 between those two companion documents.
 
 The protocol defined here is intentionally narrow.
-It is designed to ensure that a participant can discover or be provisioned with
-candidate PPD service endpoints, confirm the endpoint it selected, retrieve the
-current applicable effective policy, and provide a protected acknowledgment that
-that policy instance was received.
-The protocol also defines how participants keep association current over time,
-including renewal and reassociation behavior.
+It is designed to ensure that a device-side actor can discover or be
+provisioned with candidate home-side PPD service endpoints, confirm the
+selected endpoint, register, optionally describe itself, retrieve the current
+effective household policy that applies to it, and provide a protected receipt
+acknowledgment for that exact policy instance.
+The protocol also defines how the home-side service and the device-side actor
+keep association current over time, including renewal and reassociation
+behavior.
+
+In the formal architecture terminology reused here, the device-side actor is
+the `PPD participant`.
+That term can be easy to misread, so this document makes the intended boundary
+explicit:
+the protocol-side participant is a device or a service acting for a device, not
+the homeowner, household member, or operator who set or review household
+policy.
 
 This protocol does not define local dashboards, operator workflow, household
 policy authoring, device-behavior enforcement, or internal protocols between a
@@ -68,6 +86,11 @@ In particular, it relies on the meanings of `PPD participant`,
 `PPD service endpoint`, `policy authority`, `effective policy`,
 `association`, `current association`, `stale association`, and
 `needs reassociation`.
+
+For clarity in this document, `PPD participant` always means a device or a
+service acting on behalf of a device.
+It does not refer to a homeowner, household member, or other human actor on
+the household side of the system.
 
 # Scope
 
@@ -96,10 +119,10 @@ This document does not specify:
 
 This protocol defines a participant-facing contract between:
 
-* a `PPD participant`, which is a device or backend service acting on behalf of
-  a device; and
-* a `PPD service endpoint`, which presents effective policy instances and
-  records protected policy acknowledgments.
+* a home-side `PPD service endpoint`, which presents effective policy
+  instances and records protected policy acknowledgments; and
+* a device-side `PPD participant`, which is a device or backend service acting
+  on behalf of a device.
 
 A `policy authority` may exist behind the PPD service endpoint, but this
 protocol does not require participants to discover or address that authority
@@ -107,6 +130,19 @@ directly.
 When the service endpoint and policy authority are distinct, the deployment
 MUST preserve the authenticity and integrity of the policy information presented
 through the participant-facing endpoint.
+
+The baseline end-to-end story is therefore:
+
+1. the device-side participant learns or is provisioned with a home-side PPD
+   service endpoint;
+2. it confirms the endpoint and the applicable trust profile;
+3. it registers and may optionally submit declaration data;
+4. the home-side service endpoint returns the current effective policy for that
+   participant;
+5. the device-side participant acknowledges receipt of that exact policy
+   instance; and
+6. both sides use freshness and lifecycle state to determine whether
+   association remains current or must be renewed or replayed.
 
 ## Transport and Serialization
 
@@ -224,11 +260,23 @@ such decisions are out of scope for this protocol.
 
 The baseline participant-facing operation set is:
 
-* `GET /ppd/v1/meta`
-* `POST /ppd/v1/device/register`
-* `POST /ppd/v1/device/declaration` (optional)
-* `GET /ppd/v1/policy/effective/{device_id}`
-* `POST /ppd/v1/device/ack`
+1. `GET /ppd/v1/meta`
+2. `POST /ppd/v1/device/register`
+3. `POST /ppd/v1/device/declaration` (optional)
+4. `GET /ppd/v1/policy/effective/{device_id}`
+5. `POST /ppd/v1/device/ack`
+
+These operations form a narrow control path.
+They let a device-side participant confirm the home-side service, identify
+itself, optionally describe itself, retrieve the current effective household
+policy that applies to it, and acknowledge receipt of that specific policy
+instance.
+They do not define household policy authoring, repository-facing workflows,
+compliance attestation, or conflict-resolution procedure.
+
+When the effective policy changes, when freshness expires, or when other
+invalidating events occur, the same narrow operation set is replayed as needed
+to restore current association.
 
 A deployment MAY expose additional readback or manageability operations, but
 those are not required for baseline interoperability.

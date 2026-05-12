@@ -54,3 +54,28 @@ It is not part of the rendered Internet-Draft.
   use conventional HTTP status codes plus standard Problem Details with a
   small PPD-specific problem vocabulary, instead of inventing a custom error
   envelope or overloading HTTP status semantics.
+- Added `internal-notes/policy-rule-shape-direction.md` to capture the
+  decision that baseline declarations remain descriptive, effective policy
+  remains normative, and baseline rule effects belong only in the
+  household-originated policy object.
+- Refined `internal-notes/policy-rule-shape-direction.md` to lock in `effect`
+  as the preferred normative rule verdict field name, replacing the more
+  ambiguous `decision` label used in current Habanero examples.
+- Refined `internal-notes/policy-rule-shape-direction.md` to prefer atomic
+  baseline rules with singular core dimensions, using multiple rules rather
+  than array-valued baseline fields when several cases must be expressed.
+- Refined `internal-notes/policy-rule-shape-direction.md` to include an
+  explicit optional `constraints` object in the baseline rule shape, keeping
+  the rule model simple while preserving a clear structured extension point for
+  later qualifiers.
+- Refined `internal-notes/policy-rule-shape-direction.md` to make `retention`
+  and `locality` the preferred initial standardized `constraints` members, and
+  to note that richer examples and fleshing-out material can stay in the repo
+  even when the Internet-Draft keeps the normative text concise.
+
+## 2026-05-12
+
+- Added `internal-notes/protocol-narrative-direction.md` to capture the
+  decision to tighten the draft's opening actor language and end-to-end story
+  so that `PPD participant` is clearly device-side rather than a human
+  household actor.
