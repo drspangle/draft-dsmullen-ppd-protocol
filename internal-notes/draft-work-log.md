@@ -83,6 +83,9 @@ It is not part of the rendered Internet-Draft.
   distinction between association freshness and policy validity, support for
   company-specific taxonomies mapped to the core primitives, and the boundary
   between policy-instance provenance and collected-data provenance.
+- Clarified that the protocol draft should defer most relationship-to-existing-
+  work discussion to the architecture draft, with the protocol draft carrying
+  only a short cross-reference to that broader comparison.
 - Refined the Effective Policy Object provenance naming to prefer
   `applied_policy_id` over the narrower `override_policy_id` label.
 - Rewrote the draft opening sections to clarify the participant-facing

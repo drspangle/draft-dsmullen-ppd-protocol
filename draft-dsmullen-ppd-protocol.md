@@ -51,6 +51,11 @@ trust boundaries, and lifecycle meaning for Privacy Preference Declarations
 privacy rules and participant declarations.
 This document specifies the participant-facing protocol behavior that sits
 between those two companion documents.
+The broader relationship between PPD and earlier work such as DNT, P3P, MUD,
+and privacy-vocabulary or policy-expression efforts is discussed in
+{{?I-D.draft-dsmullen-ppd-architecture}}.
+This document does not restate that comparison except where needed to explain
+protocol behavior.
 
 The protocol defined here is intentionally narrow.
 It is designed to ensure that a device-side actor can discover or be
