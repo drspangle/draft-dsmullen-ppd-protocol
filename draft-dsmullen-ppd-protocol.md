@@ -506,6 +506,10 @@ Declaration statements use the shared taxonomy dimensions defined in
 {{?I-D.draft-dsmullen-ppd-taxonomy}}.
 The taxonomy document defines the meaning and composition of those dimensions;
 this protocol document defines only how such statements are carried.
+The baseline declaration is intentionally minimal.
+Registration carries participant identity, declarations carry descriptive
+participant assertions, and Effective Policy and Acknowledgment Objects carry
+the lifecycle-critical policy binding and freshness semantics.
 
 The declaration is descriptive only.
 It MUST NOT include normative policy verdicts such as allow or deny.

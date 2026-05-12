@@ -9,6 +9,8 @@ Date: 2026-05-12
   array of atomic descriptive cases.
 - Keep combination semantics in the taxonomy work, while letting the protocol
   carry the specific combinations a participant is asserting.
+- Keep the declaration baseline minimal: `device_id`, `declaration_id`,
+  optional `taxonomy`, and `statements`.
 
 ## Why
 
@@ -29,6 +31,10 @@ to enumerate all semantic combinations itself.
   compose.
 - The protocol draft should not try to catalog all valid semantic
   combinations.
+- Registration carries participant identity.
+- Declaration carries participant-supplied descriptive assertions.
+- Effective policy and acknowledgment carry the lifecycle-critical policy
+  binding and freshness semantics.
 
 ## Example Shape
 
@@ -67,3 +73,6 @@ and optionally:
 
 Each declaration statement should mirror the same core dimensions used by
 policy rules, but without a normative `effect`.
+The baseline declaration should remain minimal because the protocol is cleaner
+when identity, descriptive assertions, and lifecycle-critical policy state are
+kept in separate object families.

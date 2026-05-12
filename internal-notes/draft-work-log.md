@@ -103,3 +103,7 @@ It is not part of the rendered Internet-Draft.
   non-empty `statements` array of atomic descriptive cases instead of flat
   `supported_*` capability arrays, and generalized the shared constraints
   structure so both declaration statements and policy rules can use it.
+- Clarified that the declaration baseline stays minimal for architectural
+  reasons: registration carries identity, declaration carries descriptive
+  assertions, and policy plus acknowledgment carry lifecycle-critical policy
+  binding and freshness state.
