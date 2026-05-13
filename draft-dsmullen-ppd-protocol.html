@@ -1184,7 +1184,10 @@ behavior needed for interoperable policy signaling.<a href="#section-abstract-1"
                 <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-transport-and-serialization" class="internal xref">Transport and Serialization</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
-                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-candidate-discovery-and-met" class="internal xref">Candidate Discovery and Metadata Confirmation</a></p>
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-security-profiles" class="internal xref">Security Profiles</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-candidate-discovery-and-met" class="internal xref">Candidate Discovery and Metadata Confirmation</a></p>
 </li>
             </ul>
 </li>
@@ -1202,6 +1205,9 @@ behavior needed for interoperable policy signaling.<a href="#section-abstract-1"
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
                 <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-non-participating-devices" class="internal xref">Non-Participating Devices</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.5">
+                <p id="section-toc.1-1.5.2.5.1"><a href="#section-5.5" class="auto internal xref">5.5</a>.  <a href="#name-comparison-outcome-categori" class="internal xref">Comparison Outcome Categories</a></p>
 </li>
             </ul>
 </li>
@@ -1273,6 +1279,11 @@ behavior needed for interoperable policy signaling.<a href="#section-abstract-1"
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6">
                 <p id="section-toc.1-1.7.2.6.1"><a href="#section-7.6" class="auto internal xref">7.6</a>.  <a href="#name-declaration-statement-objec" class="internal xref">Declaration Statement Object</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.6.2.1">
+                    <p id="section-toc.1-1.7.2.6.2.1.1"><a href="#section-7.6.1" class="auto internal xref">7.6.1</a>.  <a href="#name-example-device-declaration-" class="internal xref">Example Device Declaration Object</a></p>
+</li>
+                </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.7">
                 <p id="section-toc.1-1.7.2.7.1"><a href="#section-7.7" class="auto internal xref">7.7</a>.  <a href="#name-effective-policy-object" class="internal xref">Effective Policy Object</a></p>
@@ -1285,6 +1296,11 @@ behavior needed for interoperable policy signaling.<a href="#section-abstract-1"
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.10">
                 <p id="section-toc.1-1.7.2.10.1"><a href="#section-7.10" class="auto internal xref">7.10</a>. <a href="#name-policy-acknowledgment-objec" class="internal xref">Policy Acknowledgment Object</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.10.2.1">
+                    <p id="section-toc.1-1.7.2.10.2.1.1"><a href="#section-7.10.1" class="auto internal xref">7.10.1</a>.  <a href="#name-example-effective-policy-an" class="internal xref">Example Effective Policy and Acknowledgment</a></p>
+</li>
+                </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.11">
                 <p id="section-toc.1-1.7.2.11.1"><a href="#section-7.11" class="auto internal xref">7.11</a>. <a href="#name-error-object" class="internal xref">Error Object</a></p>
@@ -1505,55 +1521,125 @@ association remains current or must be renewed or replayed.<a href="#section-4.1
 More compact encodings <span class="bcp14">MAY</span> be defined by future deployment profiles where
 resource constraints justify them, but such profiles need to preserve the same
 message semantics.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
-<p id="section-4.2-4">Deployments <span class="bcp14">SHOULD</span> protect participant-facing exchanges with transport security.
-Where a deployment claims strong authenticated participation, it <span class="bcp14">MUST</span> provide a
-way for the participant to authenticate the selected PPD service endpoint and
-for the service endpoint to authenticate the participant identity used for
-association and acknowledgment.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-profiles">
+<section id="section-4.3">
+        <h3 id="name-security-profiles">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-security-profiles" class="section-name selfRef">Security Profiles</a>
+        </h3>
+<p id="section-4.3-1">This protocol defines explicit participant-facing security profiles.
+The metadata <code>security_mode</code> value identifies which profile a participant-facing
+service endpoint expects.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2">The following profile identifiers are defined:<a href="#section-4.3-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.3-3.1">
+            <p id="section-4.3-3.1.1"><code>compatibility</code>:
+lower-assurance participation for constrained or transitional deployments;<a href="#section-4.3-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-3.2">
+            <p id="section-4.3-3.2.1"><code>auth-constrained-direct</code>:
+authenticated direct-device participation for devices that can meet the
+accountability floor without full certificate lifecycle expectations;<a href="#section-4.3-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-3.3">
+            <p id="section-4.3-3.3.1"><code>auth-certificate-direct</code>:
+authenticated direct-device participation for devices that can support
+stronger certificate-capable deployments; and<a href="#section-4.3-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-3.4">
+            <p id="section-4.3-3.4.1"><code>auth-backend-mediated</code>:
+authenticated participation by a service acting on behalf of a device.<a href="#section-4.3-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-4.3-4">The baseline interoperable profile set for this document consists of
+<code>compatibility</code>, <code>auth-constrained-direct</code>, and
+<code>auth-certificate-direct</code>.
+<code>auth-backend-mediated</code> is an extension profile.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+<p id="section-4.3-5">The <code>compatibility</code> profile is intentionally lower assurance.
+It <span class="bcp14">MUST NOT</span> be treated as equivalent to authenticated participation for claims
+about accountability-grade current association.<a href="#section-4.3-5" class="pilcrow">¶</a></p>
+<p id="section-4.3-6">Authenticated participation, regardless of mechanism family, <span class="bcp14">MUST</span> provide:<a href="#section-4.3-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-4.3-7.1">
+            <p id="section-4.3-7.1.1">endpoint authentication sufficient for the participant to authenticate the
+selected PPD service endpoint;<a href="#section-4.3-7.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-7.2">
+            <p id="section-4.3-7.2.1">participant authentication sufficient to bind registration and acknowledgment
+state to the same participant identity;<a href="#section-4.3-7.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-7.3">
+            <p id="section-4.3-7.3.1">confidentiality and integrity protection for participant-facing exchanges;<a href="#section-4.3-7.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-7.4">
+            <p id="section-4.3-7.4.1">policy-instance integrity sufficient to identify the acknowledged policy
+instance unambiguously; and<a href="#section-4.3-7.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-4.3-7.5">
+            <p id="section-4.3-7.5.1">freshness protection sufficient to prevent replay of old acknowledgments as
+evidence of current association.<a href="#section-4.3-7.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-4.3-8">This document does not require one universal credential mechanism across all
+participant classes.
+It is specific about required security properties first, while leaving room for
+deployment profiles to realize those properties differently for constrained
+direct devices, certificate-capable direct devices, and backend-mediated
+extensions.<a href="#section-4.3-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="candidate-discovery-and-metadata-confirmation">
-<section id="section-4.3">
+<section id="section-4.4">
         <h3 id="name-candidate-discovery-and-met">
-<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-candidate-discovery-and-met" class="section-name selfRef">Candidate Discovery and Metadata Confirmation</a>
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-candidate-discovery-and-met" class="section-name selfRef">Candidate Discovery and Metadata Confirmation</a>
         </h3>
-<p id="section-4.3-1">This protocol does not standardize a single discovery mechanism.
-Participants <span class="bcp14">MAY</span> learn candidate PPD service endpoints through configured
-provisioning, local naming, DHCP-delivered hints, multicast service discovery,
-default-gateway probing, or comparable local-network mechanisms.
-Discovery yields candidates only; it does not establish authority.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
-<p id="section-4.3-2">A participant that learns a candidate endpoint <span class="bcp14">SHOULD</span> confirm that the endpoint
-supports this protocol before deeper interaction.
-For that purpose, the baseline protocol defines:<a href="#section-4.3-2" class="pilcrow">¶</a></p>
+<p id="section-4.4-1">Every participant <span class="bcp14">MUST</span> support a configured or provisioned participant-facing
+PPD service endpoint.
+That is the minimum interoperable discovery floor.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">This protocol does not standardize one universal automatic discovery mechanism.
+Participants <span class="bcp14">MAY</span> additionally learn candidate PPD service endpoints through
+local naming, DHCP-delivered hints, multicast service discovery,
+default-gateway probing, Wi-Fi onboarding hints, or comparable local-network
+mechanisms.
+Such mechanisms are optional discovery profiles unless a deployment profile
+requires them.
+Discovery yields candidate endpoints only; it does not establish authority.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+<p id="section-4.4-3">A participant that learns a candidate endpoint through any discovery method
+<span class="bcp14">MUST</span> confirm that the endpoint supports this protocol before deeper
+interaction.
+For that purpose, the baseline protocol defines:<a href="#section-4.4-3" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-4.3-3.1">
-            <p id="section-4.3-3.1.1"><code>GET /ppd/v1/meta</code><a href="#section-4.3-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-4.4-4.1">
+            <p id="section-4.4-4.1.1"><code>GET /ppd/v1/meta</code><a href="#section-4.4-4.1.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-4.3-4">The metadata response is expected to identify at least:<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+<p id="section-4.4-5">The metadata response is expected to identify at least:<a href="#section-4.4-5" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-4.3-5.1">
-            <p id="section-4.3-5.1.1">the participant-facing service URI;<a href="#section-4.3-5.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-4.4-6.1">
+            <p id="section-4.4-6.1.1">the participant-facing service URI;<a href="#section-4.4-6.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.3-5.2">
-            <p id="section-4.3-5.2.1">the protocol version or profile identifier;<a href="#section-4.3-5.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-4.4-6.2">
+            <p id="section-4.4-6.2.1">the protocol version or profile identifier;<a href="#section-4.4-6.2.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.3-5.3">
-            <p id="section-4.3-5.3.1">the taxonomy version or versions understood by the service;<a href="#section-4.3-5.3.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-4.4-6.3">
+            <p id="section-4.4-6.3.1">the taxonomy version or versions understood by the service;<a href="#section-4.4-6.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.3-5.4">
-            <p id="section-4.3-5.4.1">whether participant declarations are supported;<a href="#section-4.3-5.4.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-4.4-6.4">
+            <p id="section-4.4-6.4.1">whether participant declarations are supported;<a href="#section-4.4-6.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.3-5.5">
-            <p id="section-4.3-5.5.1">whether protected acknowledgments are supported; and<a href="#section-4.3-5.5.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-4.4-6.5">
+            <p id="section-4.4-6.5.1">whether protected acknowledgments are supported; and<a href="#section-4.4-6.5.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-4.3-5.6">
-            <p id="section-4.3-5.6.1">the expected security mode or trust profile.<a href="#section-4.3-5.6.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-4.4-6.6">
+            <p id="section-4.4-6.6.1">the expected security mode or trust profile.<a href="#section-4.4-6.6.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-4.3-6">The metadata response <span class="bcp14">MUST NOT</span> expose household policy contents, participant
+<p id="section-4.4-7">The metadata response <span class="bcp14">MUST NOT</span> expose household policy contents, participant
 inventory, or acknowledgment history before the normal participant-facing trust
-checks succeed.<a href="#section-4.3-6" class="pilcrow">¶</a></p>
+checks succeed.
+The participant-facing discovery target is the PPD service endpoint itself, not
+an internal repository or policy-authority endpoint.<a href="#section-4.4-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -1664,6 +1750,47 @@ PPD.
 Devices that do not participate remain outside the active message exchange.
 Their presence may influence local management or enforcement decisions, but
 such decisions are out of scope for this protocol.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="comparison-outcome-categories">
+<section id="section-5.5">
+        <h3 id="name-comparison-outcome-categori">
+<a href="#section-5.5" class="section-number selfRef">5.5. </a><a href="#name-comparison-outcome-categori" class="section-name selfRef">Comparison Outcome Categories</a>
+        </h3>
+<p id="section-5.5-1">This protocol does not define a universal conflict-resolution procedure between
+participant-supplied descriptive material and household policy.
+That depends on household intent, participant capability, and deployment logic.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
+<p id="section-5.5-2">When a deployment compares participant-side descriptive or policy-related
+inputs against household policy and needs to expose the result at the protocol
+boundary, it <span class="bcp14">SHOULD</span> classify the result using one of the following coarse
+outcome categories:<a href="#section-5.5-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.5-3.1">
+            <p id="section-5.5-3.1.1"><code>compatible</code>:
+the compared inputs can coexist without further action;<a href="#section-5.5-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-3.2">
+            <p id="section-5.5-3.2.1"><code>conditionally_satisfiable</code>:
+the compared inputs can coexist if an allowed exception, alternate mode, or
+bounded refinement is applied;<a href="#section-5.5-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-3.3">
+            <p id="section-5.5-3.3.1"><code>decision_required</code>:
+household or operator choice is required before a compatible outcome can be
+determined;<a href="#section-5.5-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-3.4">
+            <p id="section-5.5-3.4.1"><code>unsatisfiable</code>:
+the compared inputs cannot be satisfied together under the currently known
+conditions; or<a href="#section-5.5-3.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-5.5-3.5">
+            <p id="section-5.5-3.5.1"><code>indeterminate</code>:
+the service cannot currently determine a reliable outcome.<a href="#section-5.5-3.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-5.5-4">This document defines the categories only.
+It does not define a universal resolution procedure.<a href="#section-5.5-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
@@ -2009,7 +2136,9 @@ whether the service accepts Policy Acknowledgment Objects;<a href="#section-7.3-
 </li>
           <li class="normal" id="section-7.3-2.5">
             <p id="section-7.3-2.5.1"><code>security_mode</code> (required, text):
-deployment security profile or trust mode identifier; and<a href="#section-7.3-2.5.1" class="pilcrow">¶</a></p>
+deployment security profile identifier, currently one of <code>compatibility</code>,
+<code>auth-constrained-direct</code>, <code>auth-certificate-direct</code>, or the extension value
+<code>auth-backend-mediated</code>; and<a href="#section-7.3-2.5.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.3-2.6">
             <p id="section-7.3-2.6.1"><code>taxonomy_versions</code> (optional, array of text):
@@ -2148,6 +2277,45 @@ destination or handling target described by the participant; and<a href="#sectio
 structured qualifiers that refine the statement.<a href="#section-7.6-3.7.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
+<div id="example-device-declaration-object">
+<section id="section-7.6.1">
+          <h4 id="name-example-device-declaration-">
+<a href="#section-7.6.1" class="section-number selfRef">7.6.1. </a><a href="#name-example-device-declaration-" class="section-name selfRef">Example Device Declaration Object</a>
+          </h4>
+<div class="lang-json sourcecode" id="section-7.6.1-1">
+<pre>
+{
+  "device_id": "doorbell-7",
+  "declaration_id": "doorbell-7-capability-v1",
+  "taxonomy": {
+    "release": "ppd-core-2026-05"
+  },
+  "statements": [
+    {
+      "statement_id": "video-motion-local",
+      "data_type": "ppd:videoFrame",
+      "purpose": "ppd:motionDetection",
+      "action": "ppd:collection",
+      "source": "ppd:cameraSensor",
+      "destination": "ppd:localProcessing"
+    },
+    {
+      "statement_id": "event-clip-remote-viewing",
+      "data_type": "ppd:eventClip",
+      "purpose": "ppd:remoteViewing",
+      "action": "ppd:transfer",
+      "source": "ppd:cameraSensor",
+      "destination": "ppd:vendorCloud",
+      "constraints": {
+        "retention": "ppd:shortLived"
+      }
+    }
+  ]
+}
+</pre><a href="#section-7.6.1-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
 </section>
 </div>
 <div id="effective-policy-object">
@@ -2313,6 +2481,63 @@ content hash of the acknowledged policy instance.<a href="#section-7.10-3.3.1" c
 <p id="section-7.10-4">This object is evidentiary only.
 It is a receipt for a specific policy instance and <span class="bcp14">MUST NOT</span> be interpreted as a
 claim of compatibility or compliance.<a href="#section-7.10-4" class="pilcrow">¶</a></p>
+<div id="example-effective-policy-and-acknowledgment">
+<section id="section-7.10.1">
+          <h4 id="name-example-effective-policy-an">
+<a href="#section-7.10.1" class="section-number selfRef">7.10.1. </a><a href="#name-example-effective-policy-an" class="section-name selfRef">Example Effective Policy and Acknowledgment</a>
+          </h4>
+<p id="section-7.10.1-1">An Effective Policy Object example:<a href="#section-7.10.1-1" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-7.10.1-2">
+<pre>
+{
+  "policy_id": "effective-doorbell-7-v3",
+  "policy_hash": "sha256:8de72af3c4d6d8c9f0b0f6a4a13c8df0f716c9c0a1130d27c855a2dd8dd8e8c7",
+  "renewal_interval": 900,
+  "taxonomy": {
+    "release": "ppd-core-2026-05"
+  },
+  "base_policy_id": "home-default-v2",
+  "applied_policy_id": "doorbell-exception-v1",
+  "computed_at": "2026-05-13T18:00:00Z",
+  "rules": [
+    {
+      "rule_id": "r1",
+      "data_type": "ppd:videoFrame",
+      "purpose": "ppd:motionDetection",
+      "action": "ppd:collection",
+      "source": "ppd:cameraSensor",
+      "destination": "ppd:localProcessing",
+      "effect": "allow"
+    },
+    {
+      "rule_id": "r2",
+      "data_type": "ppd:eventClip",
+      "purpose": "ppd:remoteViewing",
+      "action": "ppd:transfer",
+      "source": "ppd:cameraSensor",
+      "destination": "ppd:vendorCloud",
+      "effect": "allow",
+      "constraints": {
+        "retention": "ppd:shortLived",
+        "locality": "ppd:householdApprovedRemoteService"
+      }
+    }
+  ]
+}
+</pre><a href="#section-7.10.1-2" class="pilcrow">¶</a>
+</div>
+<p id="section-7.10.1-3">The matching Policy Acknowledgment Object example is:<a href="#section-7.10.1-3" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-7.10.1-4">
+<pre>
+{
+  "device_id": "doorbell-7",
+  "policy_id": "effective-doorbell-7-v3",
+  "policy_hash": "sha256:8de72af3c4d6d8c9f0b0f6a4a13c8df0f716c9c0a1130d27c855a2dd8dd8e8c7"
+}
+</pre><a href="#section-7.10.1-4" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
 </section>
 </div>
 <div id="error-object">
@@ -2354,6 +2579,34 @@ boolean hint about whether retry is appropriate.<a href="#section-7.11-4.2.1" cl
         </ul>
 <p id="section-7.11-5">Error responses <span class="bcp14">MUST NOT</span> leak more household or participant metadata than is
 necessary to explain the failure.<a href="#section-7.11-5" class="pilcrow">¶</a></p>
+<p id="section-7.11-6">For PPD-specific problems, the <code>type</code> member <span class="bcp14">SHOULD</span> be one of the following
+relative references:<a href="#section-7.11-6" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.11-7.1">
+            <p id="section-7.11-7.1.1"><code>invalid-request</code><a href="#section-7.11-7.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.11-7.2">
+            <p id="section-7.11-7.2.1"><code>invalid-participant-binding</code><a href="#section-7.11-7.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.11-7.3">
+            <p id="section-7.11-7.3.1"><code>reassociation-required</code><a href="#section-7.11-7.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.11-7.4">
+            <p id="section-7.11-7.4.1"><code>stale-association</code><a href="#section-7.11-7.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.11-7.5">
+            <p id="section-7.11-7.5.1"><code>policy-instance-mismatch</code><a href="#section-7.11-7.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.11-7.6">
+            <p id="section-7.11-7.6.1"><code>unsupported-taxonomy-term</code><a href="#section-7.11-7.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.11-7.7">
+            <p id="section-7.11-7.7.1"><code>term-resolution-failed</code><a href="#section-7.11-7.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.11-7.8">
+            <p id="section-7.11-7.8.1"><code>policy-authority-unavailable</code><a href="#section-7.11-7.8.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
 </section>
 </div>
 </section>
@@ -2398,9 +2651,76 @@ unavailability; and<a href="#section-8-2.8.1" class="pilcrow">¶</a></p>
           <p id="section-8-2.9.1">other <code>5xx</code> errors for unexpected service failures.<a href="#section-8-2.9.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-8-3">A participant that receives an error during renewal or reassociation <span class="bcp14">MUST NOT</span>
+<p id="section-8-3">The initial PPD-specific problem vocabulary is:<a href="#section-8-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-4.1">
+          <p id="section-8-4.1.1"><code>invalid-request</code>:
+malformed request payload, missing required fields, or invalid field shape;<a href="#section-8-4.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-4.2">
+          <p id="section-8-4.2.1"><code>invalid-participant-binding</code>:
+authenticated participant identity does not match the bound registration or
+requested participant identifier;<a href="#section-8-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-4.3">
+          <p id="section-8-4.3.1"><code>reassociation-required</code>:
+current association is no longer valid and the participant must replay the
+required lifecycle steps;<a href="#section-8-4.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-4.4">
+          <p id="section-8-4.4.1"><code>stale-association</code>:
+the acknowledged policy instance may still be current, but freshness expired
+and renewal is required;<a href="#section-8-4.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-4.5">
+          <p id="section-8-4.5.1"><code>policy-instance-mismatch</code>:
+the supplied <code>policy_id</code> or <code>policy_hash</code> does not identify the current
+policy instance the service expects;<a href="#section-8-4.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-4.6">
+          <p id="section-8-4.6.1"><code>unsupported-taxonomy-term</code>:
+the service recognizes the request shape but does not support one or more
+supplied taxonomy terms;<a href="#section-8-4.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-4.7">
+          <p id="section-8-4.7.1"><code>term-resolution-failed</code>:
+the service cannot resolve a supplied compact term identifier to usable
+protocol semantics; and<a href="#section-8-4.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-4.8">
+          <p id="section-8-4.8.1"><code>policy-authority-unavailable</code>:
+the participant-facing service cannot currently obtain or materialize the
+effective policy instance it needs to serve.<a href="#section-8-4.8.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-8-5">The following HTTP status mappings are <span class="bcp14">RECOMMENDED</span>:<a href="#section-8-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-8-6.1">
+          <p id="section-8-6.1.1"><code>400 Bad Request</code> with <code>invalid-request</code>;<a href="#section-8-6.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-6.2">
+          <p id="section-8-6.2.1"><code>401 Unauthorized</code> with <code>invalid-participant-binding</code> when authentication
+fails to establish the expected participant identity;<a href="#section-8-6.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-6.3">
+          <p id="section-8-6.3.1"><code>403 Forbidden</code> with <code>invalid-participant-binding</code> when the participant is
+authenticated but not authorized for the targeted participant state;<a href="#section-8-6.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-6.4">
+          <p id="section-8-6.4.1"><code>409 Conflict</code> with <code>reassociation-required</code>, <code>stale-association</code>, or
+<code>policy-instance-mismatch</code>;<a href="#section-8-6.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-6.5">
+          <p id="section-8-6.5.1"><code>422 Unprocessable Content</code> with <code>unsupported-taxonomy-term</code> or
+<code>term-resolution-failed</code>; and<a href="#section-8-6.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-8-6.6">
+          <p id="section-8-6.6.1"><code>503 Service Unavailable</code> with <code>policy-authority-unavailable</code>.<a href="#section-8-6.6.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-8-7">A participant that receives an error during renewal or reassociation <span class="bcp14">MUST NOT</span>
 assume that it still has current association unless the service endpoint has
-explicitly confirmed that state.<a href="#section-8-3" class="pilcrow">¶</a></p>
+explicitly confirmed that state.<a href="#section-8-7" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="security-considerations">
@@ -2412,35 +2732,44 @@ explicitly confirmed that state.<a href="#section-8-3" class="pilcrow">¶</a></p
 A participant <span class="bcp14">MUST</span> authenticate the selected PPD service endpoint according to
 the deployment's security profile before treating policy information as
 authoritative.<a href="#section-9-1" class="pilcrow">¶</a></p>
-<p id="section-9-2">If a deployment claims authenticated participation, it <span class="bcp14">MUST</span> provide:<a href="#section-9-2" class="pilcrow">¶</a></p>
+<p id="section-9-2">The <code>compatibility</code> profile is deliberately lower assurance than authenticated
+participation.
+Deployments <span class="bcp14">MUST NOT</span> present it as equivalent to
+<code>auth-constrained-direct</code> or <code>auth-certificate-direct</code> when making claims about
+protected current association.<a href="#section-9-2" class="pilcrow">¶</a></p>
+<p id="section-9-3">If a deployment claims authenticated participation, it <span class="bcp14">MUST</span> provide:<a href="#section-9-3" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-9-3.1">
-          <p id="section-9-3.1.1">participant authentication sufficient to bind registration and
-acknowledgment state to the same participant identity;<a href="#section-9-3.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-9-4.1">
+          <p id="section-9-4.1.1">participant authentication sufficient to bind registration and
+acknowledgment state to the same participant identity;<a href="#section-9-4.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-9-3.2">
-          <p id="section-9-3.2.1">policy integrity sufficient to identify the acknowledged policy instance
-unambiguously;<a href="#section-9-3.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-9-4.2">
+          <p id="section-9-4.2.1">participant-facing confidentiality and integrity protection for registration,
+policy retrieval, and acknowledgment exchanges;<a href="#section-9-4.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-9-3.3">
-          <p id="section-9-3.3.1">freshness protection sufficient to prevent replay of old acknowledgments as
-evidence of current association; and<a href="#section-9-3.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-9-4.3">
+          <p id="section-9-4.3.1">policy integrity sufficient to identify the acknowledged policy instance
+unambiguously;<a href="#section-9-4.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-9-3.4">
-          <p id="section-9-3.4.1">protected storage or export of acknowledgment records when those records are
-used for later inspection or accountability.<a href="#section-9-3.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-9-4.4">
+          <p id="section-9-4.4.1">freshness protection sufficient to prevent replay of old acknowledgments as
+evidence of current association; and<a href="#section-9-4.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-9-4.5">
+          <p id="section-9-4.5.1">protected storage or export of acknowledgment records when those records are
+used for later inspection or accountability.<a href="#section-9-4.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-9-4">When a PPD service endpoint fronts a distinct policy authority, the deployment
+<p id="section-9-5">When a PPD service endpoint fronts a distinct policy authority, the deployment
 <span class="bcp14">MUST</span> preserve the authenticity and integrity of policy instances, policy hashes,
 and freshness metadata across that internal boundary.
-This document does not standardize the internal protocol used for that purpose.<a href="#section-9-4" class="pilcrow">¶</a></p>
-<p id="section-9-5">The protocol <span class="bcp14">SHOULD</span> minimize metadata exposure during discovery, registration,
+This document does not standardize the internal protocol used for that purpose.<a href="#section-9-5" class="pilcrow">¶</a></p>
+<p id="section-9-6">The protocol <span class="bcp14">SHOULD</span> minimize metadata exposure during discovery, registration,
 and policy retrieval.
 In particular, discovery metadata and unauthenticated error responses <span class="bcp14">SHOULD</span>
 avoid exposing household policy contents, participant inventories, or
 acknowledgment history.
-<span>[<a href="#RFC7258" class="cite xref">RFC7258</a>]</span> remains relevant to these design choices.<a href="#section-9-5" class="pilcrow">¶</a></p>
+<span>[<a href="#RFC7258" class="cite xref">RFC7258</a>]</span> remains relevant to these design choices.<a href="#section-9-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="internationalization-considerations">
