@@ -162,22 +162,71 @@ More compact encodings MAY be defined by future deployment profiles where
 resource constraints justify them, but such profiles need to preserve the same
 message semantics.
 
-Deployments SHOULD protect participant-facing exchanges with transport security.
-Where a deployment claims strong authenticated participation, it MUST provide a
-way for the participant to authenticate the selected PPD service endpoint and
-for the service endpoint to authenticate the participant identity used for
-association and acknowledgment.
+## Security Profiles
+
+This protocol defines explicit participant-facing security profiles.
+The metadata `security_mode` value identifies which profile a participant-facing
+service endpoint expects.
+
+The following profile identifiers are defined:
+
+* `compatibility`:
+  lower-assurance participation for constrained or transitional deployments;
+* `auth-constrained-direct`:
+  authenticated direct-device participation for devices that can meet the
+  accountability floor without full certificate lifecycle expectations;
+* `auth-certificate-direct`:
+  authenticated direct-device participation for devices that can support
+  stronger certificate-capable deployments; and
+* `auth-backend-mediated`:
+  authenticated participation by a service acting on behalf of a device.
+
+The baseline interoperable profile set for this document consists of
+`compatibility`, `auth-constrained-direct`, and
+`auth-certificate-direct`.
+`auth-backend-mediated` is an extension profile.
+
+The `compatibility` profile is intentionally lower assurance.
+It MUST NOT be treated as equivalent to authenticated participation for claims
+about accountability-grade current association.
+
+Authenticated participation, regardless of mechanism family, MUST provide:
+
+* endpoint authentication sufficient for the participant to authenticate the
+  selected PPD service endpoint;
+* participant authentication sufficient to bind registration and acknowledgment
+  state to the same participant identity;
+* confidentiality and integrity protection for participant-facing exchanges;
+* policy-instance integrity sufficient to identify the acknowledged policy
+  instance unambiguously; and
+* freshness protection sufficient to prevent replay of old acknowledgments as
+  evidence of current association.
+
+This document does not require one universal credential mechanism across all
+participant classes.
+It is specific about required security properties first, while leaving room for
+deployment profiles to realize those properties differently for constrained
+direct devices, certificate-capable direct devices, and backend-mediated
+extensions.
 
 ## Candidate Discovery and Metadata Confirmation
 
-This protocol does not standardize a single discovery mechanism.
-Participants MAY learn candidate PPD service endpoints through configured
-provisioning, local naming, DHCP-delivered hints, multicast service discovery,
-default-gateway probing, or comparable local-network mechanisms.
-Discovery yields candidates only; it does not establish authority.
+Every participant MUST support a configured or provisioned participant-facing
+PPD service endpoint.
+That is the minimum interoperable discovery floor.
 
-A participant that learns a candidate endpoint SHOULD confirm that the endpoint
-supports this protocol before deeper interaction.
+This protocol does not standardize one universal automatic discovery mechanism.
+Participants MAY additionally learn candidate PPD service endpoints through
+local naming, DHCP-delivered hints, multicast service discovery,
+default-gateway probing, Wi-Fi onboarding hints, or comparable local-network
+mechanisms.
+Such mechanisms are optional discovery profiles unless a deployment profile
+requires them.
+Discovery yields candidate endpoints only; it does not establish authority.
+
+A participant that learns a candidate endpoint through any discovery method
+MUST confirm that the endpoint supports this protocol before deeper
+interaction.
 For that purpose, the baseline protocol defines:
 
 * `GET /ppd/v1/meta`
@@ -194,6 +243,8 @@ The metadata response is expected to identify at least:
 The metadata response MUST NOT expose household policy contents, participant
 inventory, or acknowledgment history before the normal participant-facing trust
 checks succeed.
+The participant-facing discovery target is the PPD service endpoint itself, not
+an internal repository or policy-authority endpoint.
 
 # Participant Lifecycle
 
@@ -258,6 +309,34 @@ PPD.
 Devices that do not participate remain outside the active message exchange.
 Their presence may influence local management or enforcement decisions, but
 such decisions are out of scope for this protocol.
+
+## Comparison Outcome Categories
+
+This protocol does not define a universal conflict-resolution procedure between
+participant-supplied descriptive material and household policy.
+That depends on household intent, participant capability, and deployment logic.
+
+When a deployment compares participant-side descriptive or policy-related
+inputs against household policy and needs to expose the result at the protocol
+boundary, it SHOULD classify the result using one of the following coarse
+outcome categories:
+
+* `compatible`:
+  the compared inputs can coexist without further action;
+* `conditionally_satisfiable`:
+  the compared inputs can coexist if an allowed exception, alternate mode, or
+  bounded refinement is applied;
+* `decision_required`:
+  household or operator choice is required before a compatible outcome can be
+  determined;
+* `unsatisfiable`:
+  the compared inputs cannot be satisfied together under the currently known
+  conditions; or
+* `indeterminate`:
+  the service cannot currently determine a reliable outcome.
+
+This document defines the categories only.
+It does not define a universal resolution procedure.
 
 # Protocol Operations
 
@@ -465,7 +544,9 @@ It contains:
 * `ack_supported` (required, boolean):
   whether the service accepts Policy Acknowledgment Objects;
 * `security_mode` (required, text):
-  deployment security profile or trust mode identifier; and
+  deployment security profile identifier, currently one of `compatibility`,
+  `auth-constrained-direct`, `auth-certificate-direct`, or the extension value
+  `auth-backend-mediated`; and
 * `taxonomy_versions` (optional, array of text):
   taxonomy release identifiers understood by the service for validation and
   reproducibility.
@@ -554,6 +635,39 @@ It contains:
   destination or handling target described by the participant; and
 * `constraints` (optional, Constraints Object):
   structured qualifiers that refine the statement.
+
+### Example Device Declaration Object
+
+~~~ json
+{
+  "device_id": "doorbell-7",
+  "declaration_id": "doorbell-7-capability-v1",
+  "taxonomy": {
+    "release": "draft-dsmullen-ppd-taxonomy-02"
+  },
+  "statements": [
+    {
+      "statement_id": "video-motion-local",
+      "data_type": "ppd:videoFrame",
+      "purpose": "ppd:motionDetection",
+      "action": "ppd:collection",
+      "source": "ppd:cameraSensor",
+      "destination": "ppd:localProcessing"
+    },
+    {
+      "statement_id": "event-clip-remote-viewing",
+      "data_type": "ppd:eventClip",
+      "purpose": "ppd:remoteViewing",
+      "action": "ppd:transfer",
+      "source": "ppd:cameraSensor",
+      "destination": "ppd:vendorCloud",
+      "constraints": {
+        "retention": "ppd:shortLived"
+      }
+    }
+  ]
+}
+~~~
 
 ## Effective Policy Object
 
@@ -665,6 +779,58 @@ This object is evidentiary only.
 It is a receipt for a specific policy instance and MUST NOT be interpreted as a
 claim of compatibility or compliance.
 
+### Example Effective Policy and Acknowledgment
+
+An Effective Policy Object example:
+
+~~~ json
+{
+  "policy_id": "effective-doorbell-7-v3",
+  "policy_hash": "sha256:8de72af3c4d6d8c9f0b0f6a4a13c8df0f716c9c0a1130d27c855a2dd8dd8e8c7",
+  "renewal_interval": 900,
+  "taxonomy": {
+    "release": "draft-dsmullen-ppd-taxonomy-02"
+  },
+  "base_policy_id": "home-default-v2",
+  "applied_policy_id": "doorbell-exception-v1",
+  "computed_at": "2026-05-13T18:00:00Z",
+  "rules": [
+    {
+      "rule_id": "r1",
+      "data_type": "ppd:videoFrame",
+      "purpose": "ppd:motionDetection",
+      "action": "ppd:collection",
+      "source": "ppd:cameraSensor",
+      "destination": "ppd:localProcessing",
+      "effect": "allow"
+    },
+    {
+      "rule_id": "r2",
+      "data_type": "ppd:eventClip",
+      "purpose": "ppd:remoteViewing",
+      "action": "ppd:transfer",
+      "source": "ppd:cameraSensor",
+      "destination": "ppd:vendorCloud",
+      "effect": "allow",
+      "constraints": {
+        "retention": "ppd:shortLived",
+        "locality": "ppd:householdApprovedRemoteService"
+      }
+    }
+  ]
+}
+~~~
+
+The matching Policy Acknowledgment Object example is:
+
+~~~ json
+{
+  "device_id": "doorbell-7",
+  "policy_id": "effective-doorbell-7-v3",
+  "policy_hash": "sha256:8de72af3c4d6d8c9f0b0f6a4a13c8df0f716c9c0a1130d27c855a2dd8dd8e8c7"
+}
+~~~
+
 ## Error Object
 
 Error responses SHOULD use `application/problem+json` and a structured error
@@ -690,6 +856,18 @@ A deployment MAY include:
 Error responses MUST NOT leak more household or participant metadata than is
 necessary to explain the failure.
 
+For PPD-specific problems, the `type` member SHOULD be one of the following
+relative references:
+
+* `invalid-request`
+* `invalid-participant-binding`
+* `reassociation-required`
+* `stale-association`
+* `policy-instance-mismatch`
+* `unsupported-taxonomy-term`
+* `term-resolution-failed`
+* `policy-authority-unavailable`
+
 # Error Handling
 
 The baseline protocol uses conventional HTTP status codes.
@@ -709,6 +887,45 @@ At minimum, participants need to handle:
   unavailability; and
 * other `5xx` errors for unexpected service failures.
 
+The initial PPD-specific problem vocabulary is:
+
+* `invalid-request`:
+  malformed request payload, missing required fields, or invalid field shape;
+* `invalid-participant-binding`:
+  authenticated participant identity does not match the bound registration or
+  requested participant identifier;
+* `reassociation-required`:
+  current association is no longer valid and the participant must replay the
+  required lifecycle steps;
+* `stale-association`:
+  the acknowledged policy instance may still be current, but freshness expired
+  and renewal is required;
+* `policy-instance-mismatch`:
+  the supplied `policy_id` or `policy_hash` does not identify the current
+  policy instance the service expects;
+* `unsupported-taxonomy-term`:
+  the service recognizes the request shape but does not support one or more
+  supplied taxonomy terms;
+* `term-resolution-failed`:
+  the service cannot resolve a supplied compact term identifier to usable
+  protocol semantics; and
+* `policy-authority-unavailable`:
+  the participant-facing service cannot currently obtain or materialize the
+  effective policy instance it needs to serve.
+
+The following HTTP status mappings are RECOMMENDED:
+
+* `400 Bad Request` with `invalid-request`;
+* `401 Unauthorized` with `invalid-participant-binding` when authentication
+  fails to establish the expected participant identity;
+* `403 Forbidden` with `invalid-participant-binding` when the participant is
+  authenticated but not authorized for the targeted participant state;
+* `409 Conflict` with `reassociation-required`, `stale-association`, or
+  `policy-instance-mismatch`;
+* `422 Unprocessable Content` with `unsupported-taxonomy-term` or
+  `term-resolution-failed`; and
+* `503 Service Unavailable` with `policy-authority-unavailable`.
+
 A participant that receives an error during renewal or reassociation MUST NOT
 assume that it still has current association unless the service endpoint has
 explicitly confirmed that state.
@@ -720,10 +937,18 @@ A participant MUST authenticate the selected PPD service endpoint according to
 the deployment's security profile before treating policy information as
 authoritative.
 
+The `compatibility` profile is deliberately lower assurance than authenticated
+participation.
+Deployments MUST NOT present it as equivalent to
+`auth-constrained-direct` or `auth-certificate-direct` when making claims about
+protected current association.
+
 If a deployment claims authenticated participation, it MUST provide:
 
 * participant authentication sufficient to bind registration and
   acknowledgment state to the same participant identity;
+* participant-facing confidentiality and integrity protection for registration,
+  policy retrieval, and acknowledgment exchanges;
 * policy integrity sufficient to identify the acknowledged policy instance
   unambiguously;
 * freshness protection sufficient to prevent replay of old acknowledgments as

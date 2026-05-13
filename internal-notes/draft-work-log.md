@@ -107,3 +107,23 @@ It is not part of the rendered Internet-Draft.
   reasons: registration carries identity, declaration carries descriptive
   assertions, and policy plus acknowledgment carry lifecycle-critical policy
   binding and freshness state.
+
+## 2026-05-13
+
+- Tightened discovery text so the protocol draft now makes configured or
+  provisioned endpoint support the baseline discovery floor, requires
+  `GET /ppd/v1/meta` confirmation for discovered candidates, and treats
+  automatic local discovery mechanisms as optional profiles.
+- Added explicit participant-facing security profiles, including the
+  lower-assurance `compatibility` mode, two baseline direct-device
+  authenticated profiles, and an extension backend-mediated profile.
+- Defined the initial PPD-specific problem-type vocabulary and recommended HTTP
+  status mappings on top of Problem Details.
+- Added concrete JSON examples for Device Declaration, Effective Policy, and
+  Policy Acknowledgment Objects.
+- Added coarse comparison outcome categories while keeping conflict-resolution
+  procedure outside the baseline participant-facing protocol.
+- Synchronized the companion architecture and taxonomy drafts with this
+  protocol direction, including explicit companion-draft references in the
+  architecture text and a taxonomy model centered on compact identifiers,
+  extension namespaces, and mapping back to shared core primitives.
