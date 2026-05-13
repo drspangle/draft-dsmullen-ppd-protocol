@@ -47,3 +47,49 @@ git push origin draft-dsmullen-ppd-protocol-00
 
 The publish workflow then runs `make upload` and Datatracker still requires the
 normal confirmation email step.
+
+## Upstream-Verified Submission Notes
+
+These points were re-checked against Martin Thomson's upstream
+`i-d-template` documentation on 2026-05-13:
+
+- Local rendering on Windows is still expected to happen through WSL with a
+  Linux distribution such as Ubuntu.
+- The minimum local toolchain is POSIX `make`, `python3` with `pip` and
+  `venv`, and `ruby` with `gem` and `bundler`. `npm` and `xmllint` are also
+  expected by this repo's local environment check script.
+- The preferred automated submission path is an annotated draft tag pushed to
+  GitHub. For this repo that means:
+
+```sh
+git push origin main
+git tag -a draft-dsmullen-ppd-protocol-00 -m "Submit draft-dsmullen-ppd-protocol-00"
+git push origin draft-dsmullen-ppd-protocol-00
+```
+
+- The submitter email used by Datatracker needs to match a verified
+  Datatracker account address. The template checks, in order:
+  1. an `UPLOAD_EMAIL` value passed to the workflow;
+  2. an exported `UPLOAD_EMAIL` value from the Makefile or environment;
+  3. the email on an annotated git tag;
+  4. the GitHub account email; and then
+  5. the first author email in the draft.
+- If CI submission fails because the draft needs fixing, delete the tag before
+  retagging:
+
+```sh
+git tag -d draft-dsmullen-ppd-protocol-00
+git push origin :draft-dsmullen-ppd-protocol-00
+```
+
+- If CI is unavailable, fallback paths are:
+  - `make publish` after creating an annotated tag; or
+  - `make next`, then manually submit the generated `.xml` file to
+    Datatracker.
+
+## Current Session Note
+
+The host machine has Ubuntu installed and working under WSL. However, in this
+Codex session, `wsl.exe -l -v` did not enumerate that distro. Treat that as an
+execution-context limitation in this session, not a machine-level installation
+problem.

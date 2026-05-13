@@ -127,3 +127,13 @@ It is not part of the rendered Internet-Draft.
   protocol direction, including explicit companion-draft references in the
   architecture text and a taxonomy model centered on compact identifiers,
   extension namespaces, and mapping back to shared core primitives.
+- Re-checked Martin Thomson's upstream `i-d-template` setup and submission
+  guidance against this repo's local notes and workflow files, then updated the
+  tracked template-operations note with the verified tag-driven submission
+  path, fallback manual paths, Datatracker email-selection behavior, and a
+  session-local note that the host Ubuntu-on-WSL setup is real but was not
+  visible from this Codex execution context.
+- Replaced example taxonomy release strings that hard-coded the current
+  taxonomy Internet-Draft revision with a generic release identifier
+  (`ppd-core-2026-05`) so the examples do not drift every time the taxonomy
+  draft is republished.

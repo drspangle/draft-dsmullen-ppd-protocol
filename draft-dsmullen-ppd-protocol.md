@@ -643,7 +643,7 @@ It contains:
   "device_id": "doorbell-7",
   "declaration_id": "doorbell-7-capability-v1",
   "taxonomy": {
-    "release": "draft-dsmullen-ppd-taxonomy-02"
+    "release": "ppd-core-2026-05"
   },
   "statements": [
     {
@@ -789,7 +789,7 @@ An Effective Policy Object example:
   "policy_hash": "sha256:8de72af3c4d6d8c9f0b0f6a4a13c8df0f716c9c0a1130d27c855a2dd8dd8e8c7",
   "renewal_interval": 900,
   "taxonomy": {
-    "release": "draft-dsmullen-ppd-taxonomy-02"
+    "release": "ppd-core-2026-05"
   },
   "base_policy_id": "home-default-v2",
   "applied_policy_id": "doorbell-exception-v1",
