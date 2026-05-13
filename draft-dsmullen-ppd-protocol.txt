@@ -5,7 +5,7 @@
 Network Working Group                                         D. Smullen
 Internet-Draft                                                B. Scriber
 Intended status: Informational                                 CableLabs
-Expires: 8 November 2026                                      7 May 2026
+Expires: 14 November 2026                                    13 May 2026
 
 
          Privacy Preference Declaration Protocol Specification
@@ -14,13 +14,15 @@ Expires: 8 November 2026                                      7 May 2026
 Abstract
 
    This document specifies a participant-facing protocol for Privacy
-   Preference Declarations (PPDs) in home networks.  It defines baseline
-   operations for endpoint metadata confirmation, participant
-   registration, optional participant declaration, effective-policy
-   retrieval, policy acknowledgment, renewal, and reassociation.  This
-   document complements the PPD architecture and taxonomy documents by
-   defining the message and sequencing behavior needed for interoperable
-   policy signaling.
+   Preference Declarations (PPDs) in home networks.  The protocol is
+   between a home-side PPD service endpoint and a device-side actor,
+   formally the PPD participant, which is a device or a service acting
+   on behalf of a device.  It defines baseline operations for endpoint
+   metadata confirmation, participant registration, optional participant
+   declaration, effective-policy retrieval, policy acknowledgment,
+   renewal, and reassociation.  This document complements the PPD
+   architecture and taxonomy documents by defining the message and
+   sequencing behavior needed for interoperable policy signaling.
 
 About This Document
 
@@ -50,7 +52,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 8 November 2026.
+   This Internet-Draft will expire on 14 November 2026.
 
 Copyright Notice
 
@@ -93,12 +95,17 @@ Table of Contents
      6.6.  Policy Acknowledgment
        6.6.1.  POST /ppd/v1/device/ack
    7.  Message Objects
-     7.1.  Service Metadata Object
-     7.2.  Device Registration Object
-     7.3.  Device Declaration Object
-     7.4.  Effective Policy Object
-     7.5.  Policy Acknowledgment Object
-     7.6.  Error Object
+     7.1.  Compact Term Identifiers
+     7.2.  Taxonomy Context Object
+     7.3.  Service Metadata Object
+     7.4.  Device Registration Object
+     7.5.  Device Declaration Object
+     7.6.  Declaration Statement Object
+     7.7.  Effective Policy Object
+     7.8.  Policy Rule Object
+     7.9.  Constraints Object
+     7.10. Policy Acknowledgment Object
+     7.11. Error Object
    8.  Error Handling
    9.  Security Considerations
    10. Internationalization Considerations
@@ -116,15 +123,29 @@ Table of Contents
    [I-D.draft-dsmullen-ppd-taxonomy] defines the vocabulary used to
    express privacy rules and participant declarations.  This document
    specifies the participant-facing protocol behavior that sits between
-   those two companion documents.
+   those two companion documents.  The broader relationship between PPD
+   and earlier work such as DNT, P3P, MUD, and privacy-vocabulary or
+   policy-expression efforts is discussed in
+   [I-D.draft-dsmullen-ppd-architecture].  This document does not
+   restate that comparison except where needed to explain protocol
+   behavior.
 
    The protocol defined here is intentionally narrow.  It is designed to
-   ensure that a participant can discover or be provisioned with
-   candidate PPD service endpoints, confirm the endpoint it selected,
-   retrieve the current applicable effective policy, and provide a
-   protected acknowledgment that that policy instance was received.  The
-   protocol also defines how participants keep association current over
-   time, including renewal and reassociation behavior.
+   ensure that a device-side actor can discover or be provisioned with
+   candidate home-side PPD service endpoints, confirm the selected
+   endpoint, register, optionally describe itself, retrieve the current
+   effective household policy that applies to it, and provide a
+   protected receipt acknowledgment for that exact policy instance.  The
+   protocol also defines how the home-side service and the device-side
+   actor keep association current over time, including renewal and
+   reassociation behavior.
+
+   In the formal architecture terminology reused here, the device-side
+   actor is the PPD participant.  That term can be easy to misread, so
+   this document makes the intended boundary explicit: the protocol-side
+   participant is a device or a service acting for a device, not the
+   homeowner, household member, or operator who set or review household
+   policy.
 
    This protocol does not define local dashboards, operator workflow,
    household policy authoring, device-behavior enforcement, or internal
@@ -145,6 +166,11 @@ Table of Contents
    the meanings of PPD participant, PPD service endpoint, policy
    authority, effective policy, association, current association, stale
    association, and needs reassociation.
+
+   For clarity in this document, PPD participant always means a device
+   or a service acting on behalf of a device.  It does not refer to a
+   homeowner, household member, or other human actor on the household
+   side of the system.
 
 3.  Scope
 
@@ -182,11 +208,11 @@ Table of Contents
 
    This protocol defines a participant-facing contract between:
 
-   *  a PPD participant, which is a device or backend service acting on
-      behalf of a device; and
+   *  a home-side PPD service endpoint, which presents effective policy
+      instances and records protected policy acknowledgments; and
 
-   *  a PPD service endpoint, which presents effective policy instances
-      and records protected policy acknowledgments.
+   *  a device-side PPD participant, which is a device or backend
+      service acting on behalf of a device.
 
    A policy authority may exist behind the PPD service endpoint, but
    this protocol does not require participants to discover or address
@@ -194,6 +220,24 @@ Table of Contents
    authority are distinct, the deployment MUST preserve the authenticity
    and integrity of the policy information presented through the
    participant-facing endpoint.
+
+   The baseline end-to-end story is therefore:
+
+   1.  the device-side participant learns or is provisioned with a home-
+       side PPD service endpoint;
+
+   2.  it confirms the endpoint and the applicable trust profile;
+
+   3.  it registers and may optionally submit declaration data;
+
+   4.  the home-side service endpoint returns the current effective
+       policy for that participant;
+
+   5.  the device-side participant acknowledges receipt of that exact
+       policy instance; and
+
+   6.  both sides use freshness and lifecycle state to determine whether
+       association remains current or must be renewed or replayed.
 
 4.2.  Transport and Serialization
 
@@ -329,15 +373,27 @@ Table of Contents
 
    The baseline participant-facing operation set is:
 
-   *  GET /ppd/v1/meta
+   1.  GET /ppd/v1/meta
 
-   *  POST /ppd/v1/device/register
+   2.  POST /ppd/v1/device/register
 
-   *  POST /ppd/v1/device/declaration (optional)
+   3.  POST /ppd/v1/device/declaration (optional)
 
-   *  GET /ppd/v1/policy/effective/{device_id}
+   4.  GET /ppd/v1/policy/effective/{device_id}
 
-   *  POST /ppd/v1/device/ack
+   5.  POST /ppd/v1/device/ack
+
+   These operations form a narrow control path.  They let a device-side
+   participant confirm the home-side service, identify itself,
+   optionally describe itself, retrieve the current effective household
+   policy that applies to it, and acknowledge receipt of that specific
+   policy instance.  They do not define household policy authoring,
+   repository-facing workflows, compliance attestation, or conflict-
+   resolution procedure.
+
+   When the effective policy changes, when freshness expires, or when
+   other invalidating events occur, the same narrow operation set is
+   replayed as needed to restore current association.
 
    A deployment MAY expose additional readback or manageability
    operations, but those are not required for baseline interoperability.
@@ -358,19 +414,7 @@ Table of Contents
    *  communicate security expectations before registration or policy
       retrieval.
 
-   A successful response SHOULD include:
-
-   *  service_uri
-
-   *  protocol_version
-
-   *  taxonomy_versions
-
-   *  declaration_supported
-
-   *  ack_supported
-
-   *  security_mode
+   A successful response MUST be a Service Metadata Object.
 
 6.3.  Registration
 
@@ -384,9 +428,7 @@ Table of Contents
    *  bind the participant's current protocol identity to the
       registration state.
 
-   The request body MUST include:
-
-   *  device_id
+   The request body MUST be a Device Registration Object.
 
    The request body SHOULD include, when available and appropriate for
    the deployment:
@@ -423,15 +465,13 @@ Table of Contents
    declaration can still establish association if it can retrieve and
    acknowledge the applicable policy instance.
 
-   The request body MUST include:
+   The request body MUST be a Device Declaration Object.
 
-   *  device_id
-
-   *  declaration_id
-
-   A declaration MAY include supported values for the taxonomy
-   dimensions defined in [I-D.draft-dsmullen-ppd-taxonomy], such as
-   supported data types, purposes, actions, sources, and destinations.
+   A declaration carries one or more descriptive statements that use the
+   taxonomy dimensions defined in [I-D.draft-dsmullen-ppd-taxonomy],
+   such as data type, purpose, action, source, and destination.  The
+   taxonomy document defines the meaning and composition of those
+   dimensions.
 
 6.5.  Effective Policy Retrieval
 
@@ -442,32 +482,27 @@ Table of Contents
    *  return the effective policy instance currently applicable to the
       participant;
 
-   *  return enough provenance information to identify what was
-      acknowledged; and
+   *  return enough policy-instance provenance information to identify
+      what was acknowledged; and
 
-   *  communicate the freshness limit for current association.
+   *  communicate the association-freshness limit for current
+      association.
 
-   A successful response MUST include:
+   A successful response MUST be an Effective Policy Object.
 
-   *  policy_id
-
-   *  policy_hash
-
-   *  taxonomy_version
-
-   *  rules
-
-   *  either renew_by or renewal_interval
-
-   A successful response SHOULD include provenance fields that let later
-   inspection distinguish the household baseline from any more specific
-   inputs, such as:
+   A successful response SHOULD include policy-instance provenance
+   fields that let later inspection distinguish the household baseline
+   from any more specific inputs, such as:
 
    *  base_policy_id
 
-   *  override_policy_id when a more specific policy layer was applied
+   *  applied_policy_id when a more specific policy layer was applied
 
    *  computed_at
+
+   These fields describe the provenance of the returned policy instance
+   itself.  They do not describe the provenance of data later collected,
+   transformed, or derived by participant devices or services.
 
    This operation returns the policy instance the participant is
    expected to acknowledge.  It is not required to expose the internal
@@ -482,13 +517,7 @@ Table of Contents
    *  record a protected acknowledgment that a participant received a
       specific policy instance.
 
-   The request body MUST include:
-
-   *  device_id
-
-   *  policy_id
-
-   *  policy_hash
+   The request body MUST be a Policy Acknowledgment Object.
 
    The acknowledgment payload is a receipt signal only.  It MUST NOT be
    interpreted as a claim that the participant can satisfy every policy
@@ -498,7 +527,9 @@ Table of Contents
 
    A successful acknowledgment response SHOULD include:
 
-   *  the resulting association state; and
+   *  the resulting association state, where association_status if
+      present SHOULD be one of not_associated, associated,
+      needs_reassociation, stale_association, or broken; and
 
    *  the next renew_by or renewal_interval value to be used for
       maintaining current association.
@@ -508,61 +539,318 @@ Table of Contents
 
 7.  Message Objects
 
-7.1.  Service Metadata Object
+   The following object definitions are normative for baseline
+   interoperability.  Unless otherwise stated:
+
+   *  identifiers such as device_id, declaration_id, policy_id, and
+      rule_id are opaque text strings;
+
+   *  timestamp fields use RFC 3339 date-time strings [RFC3339];
+
+   *  policy_hash uses the form algorithm:value, and baseline
+      implementations MUST support sha256; and
+
+   *  renewal_interval is a positive integer count of seconds.
+
+7.1.  Compact Term Identifiers
+
+   Taxonomy-bearing fields use compact term identifiers.  A compact term
+   identifier is a text string whose meaning is determined by:
+
+   *  a reserved core prefix defined by the protocol or taxonomy work;
+      or
+
+   *  an explicit extension-prefix declaration in a Taxonomy Context
+      Object.
+
+   The term identifier itself is the primary semantic hook.  Taxonomy
+   release metadata remains secondary validation context.  Deployments
+   MAY use company-specific or other non-core taxonomies when their
+   terms map to the shared core primitives and are declared through the
+   applicable taxonomy context.
+
+7.2.  Taxonomy Context Object
+
+   The Taxonomy Context Object carries optional vocabulary-release
+   context and any required non-core prefix declarations.
+
+   It MAY include:
+
+   *  release: a text identifier for the taxonomy release or profile in
+      view when the object was produced; and
+
+   *  prefixes: an object mapping non-core compact prefixes to stable
+      namespace identifiers.
+
+   Reserved core prefixes MUST NOT be remapped in prefixes.  A Taxonomy
+   Context Object is REQUIRED whenever non-core compact prefixes appear
+   in the containing object.
+
+7.3.  Service Metadata Object
 
    The service metadata object describes a candidate endpoint before
-   deeper interaction.  It SHOULD include:
+   deeper interaction.  It contains:
 
-   *  service_uri
+   *  service_uri (required, URI string): canonical participant-facing
+      service URI;
 
-   *  protocol_version
+   *  protocol_version (required, text): protocol version or profile
+      identifier for the participant-facing contract;
 
-   *  taxonomy_versions
+   *  declaration_supported (required, boolean): whether the service
+      accepts Device Declaration Objects;
 
-   *  declaration_supported
+   *  ack_supported (required, boolean): whether the service accepts
+      Policy Acknowledgment Objects;
 
-   *  ack_supported
+   *  security_mode (required, text): deployment security profile or
+      trust mode identifier; and
 
-   *  security_mode
+   *  taxonomy_versions (optional, array of text): taxonomy release
+      identifiers understood by the service for validation and
+      reproducibility.
 
-7.2.  Device Registration Object
+7.4.  Device Registration Object
 
    The registration object identifies the participant and carries
    optional device metadata.  The stable identifier is device_id.  Other
    metadata fields are deployment-dependent and do not replace the
    stable participant identifier.
 
-7.3.  Device Declaration Object
+   It contains:
+
+   *  device_id (required, text): stable participant identifier for this
+      device-side actor;
+
+   *  manufacturer (optional, text): participant-reported vendor name;
+
+   *  model (optional, text): participant-reported model name or number;
+
+   *  firmware_version (optional, text): participant-reported software
+      or firmware version;
+
+   *  hostname (optional, text): participant-reported hostname when
+      relevant to the deployment;
+
+   *  mac_address (optional, text): participant-reported link-layer
+      address when the deployment profile permits it; and
+
+   *  ip_address (optional, text): participant-reported network address
+      when the deployment profile permits it.
+
+7.5.  Device Declaration Object
 
    The declaration object carries participant-supplied capability or
-   data-handling information.  At minimum it contains device_id and
-   declaration_id.  Additional fields SHOULD use the shared taxonomy
-   dimensions defined in [I-D.draft-dsmullen-ppd-taxonomy].
+   data-handling information.  At minimum it contains device_id,
+   declaration_id, and a non-empty statements array.  Declaration
+   statements use the shared taxonomy dimensions defined in
+   [I-D.draft-dsmullen-ppd-taxonomy].  The taxonomy document defines the
+   meaning and composition of those dimensions; this protocol document
+   defines only how such statements are carried.  The baseline
+   declaration is intentionally minimal.  Registration carries
+   participant identity, declarations carry descriptive participant
+   assertions, and Effective Policy and Acknowledgment Objects carry the
+   lifecycle-critical policy binding and freshness semantics.
 
-7.4.  Effective Policy Object
+   The declaration is descriptive only.  It MUST NOT include normative
+   policy verdicts such as allow or deny.
+
+   It contains:
+
+   *  device_id (required, text): participant identifier to which the
+      declaration applies;
+
+   *  declaration_id (required, text): stable identifier for this
+      declaration instance;
+
+   *  taxonomy (optional, Taxonomy Context Object): release context and
+      any required non-core prefix declarations;
+
+   *  statements (required, non-empty array of Declaration Statement
+      Objects): participant-supplied descriptive cases stating which
+      taxonomy-defined combinations apply to this participant.
+
+   If a declaration uses any non-core compact prefix in its statements
+   or constraints, the taxonomy object is REQUIRED.
+
+7.6.  Declaration Statement Object
+
+   A Declaration Statement Object is an atomic descriptive statement
+   inside a Device Declaration Object.  It mirrors the same core
+   dimensions used by policy rules so that participant assertions can be
+   compared at the same grain, but it MUST NOT include a normative
+   effect.
+
+   It contains:
+
+   *  statement_id (required, text): stable identifier for the statement
+      within the declaration instance;
+
+   *  data_type (required, compact term identifier): data category to
+      which the statement applies;
+
+   *  purpose (required, compact term identifier): purpose associated
+      with the described handling;
+
+   *  action (required, compact term identifier): handling action the
+      participant performs or may request;
+
+   *  source (required, compact term identifier): source context for the
+      handled data;
+
+   *  destination (required, compact term identifier): destination or
+      handling target described by the participant; and
+
+   *  constraints (optional, Constraints Object): structured qualifiers
+      that refine the statement.
+
+7.7.  Effective Policy Object
 
    The effective policy object represents the policy instance the
    participant must acknowledge.  It contains the policy identifier,
-   hash, taxonomy version, rule set, and freshness information.  It
-   SHOULD also contain provenance fields that make later recordkeeping
-   and inspection meaningful.
+   hash, rule set, and freshness information.  It SHOULD also contain
+   policy-instance provenance fields that make later recordkeeping and
+   inspection meaningful.
 
-7.5.  Policy Acknowledgment Object
+   It contains:
+
+   *  policy_id (required, text): stable identifier for the policy
+      instance to be acknowledged;
+
+   *  policy_hash (required, text): stable content hash for the policy
+      instance;
+
+   *  rules (required, array of Policy Rule Objects): normative rule set
+      for this effective policy instance;
+
+   *  renew_by (optional, RFC 3339 date-time string): absolute deadline
+      by which current association must be renewed if this field is
+      used;
+
+   *  renewal_interval (optional, positive integer seconds): bounded
+      interval after response generation within which current
+      association must be renewed if this field is used;
+
+   *  taxonomy (optional, Taxonomy Context Object): release context and
+      any required non-core prefix declarations for rule terms;
+
+   *  base_policy_id (optional, text): identifier for the household
+      baseline policy used in this effective result;
+
+   *  applied_policy_id (optional, text): identifier for a more specific
+      applied policy layer when present; and
+
+   *  computed_at (optional, RFC 3339 date-time string): time at which
+      the effective policy instance was computed or materialized.
+
+   An Effective Policy Object MUST contain exactly one of renew_by or
+   renewal_interval.  These fields govern association freshness for the
+   participant-facing lifecycle.  They do not define abstract policy
+   validity outside that lifecycle.  If any rule uses a non-core compact
+   prefix, the taxonomy object is REQUIRED.
+
+7.8.  Policy Rule Object
+
+   A Policy Rule Object is an atomic normative statement inside an
+   Effective Policy Object.
+
+   The baseline rule model uses singular core dimensions.  When multiple
+   cases must be expressed, they are represented as multiple rules
+   rather than array-valued core dimensions inside one rule.
+
+   It contains:
+
+   *  rule_id (required, text): stable identifier for the rule within
+      the policy instance;
+
+   *  data_type (required, compact term identifier): data category to
+      which the rule applies;
+
+   *  purpose (required, compact term identifier): purpose for which the
+      data handling is considered;
+
+   *  action (required, compact term identifier): handling action
+      covered by the rule;
+
+   *  source (required, compact term identifier): source context for the
+      handled data;
+
+   *  destination (required, compact term identifier): destination or
+      handling target covered by the rule;
+
+   *  effect (required, text): normative rule effect, currently one of
+      allow or deny; and
+
+   *  constraints (optional, Constraints Object): structured qualifiers
+      that refine the rule.
+
+   An Effective Policy Object SHOULD NOT contain two Policy Rule Objects
+   with the same core dimensions but different effect values.  Such
+   contradictions should be resolved before the effective policy is
+   returned.
+
+7.9.  Constraints Object
+
+   The Constraints Object preserves a structured extension point for
+   qualifiers without requiring a large qualifier language in the
+   baseline draft.  It is shared by declaration statements and policy
+   rules.
+
+   The initial standardized members are:
+
+   *  retention (optional, compact term identifier): retention-class
+      qualifier for the described or allowed or denied handling; and
+
+   *  locality (optional, compact term identifier): locality or trust-
+      boundary qualifier for the described or allowed or denied
+      handling.
+
+   Future specifications or deployment profiles MAY define additional
+   structured constraint members.  A Constraints Object MUST NOT be
+   treated as an unstructured free-form text field.
+
+7.10.  Policy Acknowledgment Object
 
    The acknowledgment object binds a participant identifier to a
    specific policy instance and policy hash.  Deployments that claim
    strong accountability properties MUST protect the acknowledgment
    against forgery, replay, and stale-policy confusion.
 
-7.6.  Error Object
+   It contains:
 
-   Error responses SHOULD use a structured error object with at least:
+   *  device_id (required, text): participant identifier acknowledging
+      receipt;
 
-   *  code
+   *  policy_id (required, text): policy instance identifier being
+      acknowledged; and
 
-   *  detail
+   *  policy_hash (required, text): content hash of the acknowledged
+      policy instance.
 
-   A deployment MAY include a hint about whether retry is appropriate.
+   This object is evidentiary only.  It is a receipt for a specific
+   policy instance and MUST NOT be interpreted as a claim of
+   compatibility or compliance.
+
+7.11.  Error Object
+
+   Error responses SHOULD use application/problem+json and a structured
+   error object with at least:
+
+   *  type: problem type identifier, including PPD-specific problem
+      types when applicable;
+
+   *  title: short problem summary;
+
+   *  status: HTTP status code for this error; and
+
+   *  detail: human-readable explanation when useful.
+
+   A deployment MAY include:
+
+   *  instance: problem-instance identifier; and
+
+   *  retryable: boolean hint about whether retry is appropriate.
+
    Error responses MUST NOT leak more household or participant metadata
    than is necessary to explain the failure.
 
@@ -582,10 +870,17 @@ Table of Contents
 
    *  404 Not Found for missing participant or policy state;
 
-   *  409 Conflict for conflicting participant identity state or
-      acknowledgments that do not match the current policy instance; and
+   *  409 Conflict for lifecycle or policy-instance conflicts, such as
+      acknowledgments that do not match the current policy instance;
 
-   *  5xx errors for transient service or policy-authority failures.
+   *  422 Unprocessable Content for well-formed content that cannot be
+      processed semantically, such as unsupported or unresolvable
+      taxonomy terms;
+
+   *  503 Service Unavailable for transient service or policy-authority
+      unavailability; and
+
+   *  other 5xx errors for unexpected service failures.
 
    A participant that receives an error during renewal or reassociation
    MUST NOT assume that it still has current association unless the
@@ -664,6 +959,10 @@ Table of Contents
               draft-dsmullen-ppd-taxonomy-02, 7 December 2025,
               <https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-
               taxonomy-02>.
+
+   [RFC3339]  Klyne, G. and C. Newman, "Date and Time on the Internet:
+              Timestamps", RFC 3339, DOI 10.17487/RFC3339, July 2002,
+              <https://www.rfc-editor.org/rfc/rfc3339>.
 
    [RFC7258]  Farrell, S. and H. Tschofenig, "Pervasive Monitoring Is an
               Attack", BCP 188, RFC 7258, DOI 10.17487/RFC7258, May
