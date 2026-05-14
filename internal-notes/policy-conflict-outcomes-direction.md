@@ -90,12 +90,42 @@ instance.
 Conflict classification, exception handling, and satisfiability are separate
 matters and should not be overloaded into the acknowledgment operation.
 
+### Protocol Surface
+
+The current direction is to expose these categories, when a deployment chooses
+to expose them at all, on the declaration path rather than in policy retrieval
+or acknowledgment.
+
+That means:
+
+- the declaration remains the participant-originated descriptive input
+- the service may optionally return a structured comparison result after
+  receiving that input
+- the Effective Policy Object remains the household-originated normative object
+- the Policy Acknowledgment Object remains a receipt for a specific policy
+  instance
+
+This keeps the comparison result attached to the operation that triggered it
+without overloading the policy or acknowledgment objects with unrelated
+semantics.
+
+Important constraint:
+
+- the declaration path is not a bargaining channel
+- the baseline protocol should not let a participant request repeated
+  comparison attempts, pressure the household for policy relaxation, or use
+  the comparison surface to trigger homeowner consent prompting
+- the service may expose a comparison result, but that does not create a
+  participant entitlement to negotiation or to policy-element disclosure
+
 ### What To Avoid In The Draft
 
 - do not define a universal conflict-resolution procedure
 - do not assume the household always wants automatic denial or automatic
   exception
 - do not bake one device-negotiation model into the baseline protocol
+- do not let the declaration path become a policy-relaxation or consent-
+  bullying channel
 - do not collapse policy comparison outcomes into the receipt acknowledgment
 - do not pretend every conflict can be resolved purely by protocol mechanics
 
@@ -107,10 +137,12 @@ The draft should tell the comparison story in this sequence:
 2. the participant may also provide declaration or other participant-originated
    policy-related input
 3. a deployment or policy authority may compare those inputs
-4. the result of that comparison may be exposed through coarse outcome
-   categories
-5. the protocol does not standardize how the conflict is then resolved
-6. household policy, device capability, and deployment logic determine the
+4. when exposed at the baseline participant-facing protocol boundary, the
+   result is carried as a declaration-path comparison outcome
+5. that comparison surface is diagnostic only, not a bargaining or homeowner-
+   prompt channel
+6. the protocol does not standardize how the conflict is then resolved
+7. household policy, device capability, and deployment logic determine the
    actual resolution path
 
 ### Short Drafting Position
@@ -119,7 +151,12 @@ The shortest coherent statement of this decision is:
 
 "The baseline protocol defines coarse outcome categories for conflicts between
 household policy and participant-originated policy-related inputs, but it does
-not define a universal conflict-resolution procedure. Resolution depends on
-household intent, policy-defined enforcement or exception behavior, device
-capability, and technical or configurability limits. Acknowledgment of the
-current effective policy instance remains a separate receipt signal."
+not define a universal conflict-resolution procedure. When a deployment
+exposes such a result at the baseline participant-facing protocol boundary, it
+should do so on the declaration path rather than overloading policy retrieval
+or acknowledgment. That declaration-path surface is diagnostic only and should
+not be turned into a participant-driven negotiation or homeowner-prompt
+channel. Resolution depends on household intent, policy-defined enforcement or
+exception behavior, device capability, and technical or configurability
+limits. Acknowledgment of the current effective policy instance remains a
+separate receipt signal."

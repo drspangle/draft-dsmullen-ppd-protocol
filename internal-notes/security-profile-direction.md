@@ -17,8 +17,9 @@ assurance differences normative and visible.
 
 Top-level profile structure:
 
-- a lower-assurance `compatibility profile`
-- an `authenticated participation profile` defined by an accountability floor
+- authenticated direct-participation profiles defined by an accountability
+  floor
+- an authenticated backend-mediated extension profile
 
 Within authenticated participation, the draft should leave room for a small set
 of profiled mechanism families aligned to broad participant classes rather than
@@ -32,12 +33,12 @@ Current direction:
 
 ### Why This Direction Holds
 
-- the protocol needs a real path for constrained and transitional devices
+- the protocol needs a real path for constrained devices
 - the protocol also needs a credible accountability story for registration,
   policy delivery, and acknowledgment
 - generic wording alone leaves too much room for incompatible interpretations
-- one universal high-assurance mechanism would overfit to only part of the
-  home-IoT population
+- weakening participation until unauthenticated devices qualify would undercut
+  the protocol's security purpose
 - the high-assurance floor is not just too heavy for the first draft revision;
   it is too heavy as a general expectation for the full range of intended home
   devices
@@ -128,17 +129,23 @@ Important boundary:
 - it means the baseline protocol need not standardize the full backend-on-
   behalf-of-device interaction model in its first core profile set
 
-### Compatibility Profile
+### Extremely Constrained Devices
 
-The `compatibility profile` can exist for constrained or transitional devices,
-but it must remain visibly lower assurance.
+Extremely constrained devices still matter, but they should not redefine the
+meaning of participation.
 
-It should not be allowed to masquerade as equivalent to authenticated
-participation.
+Current direction:
 
-In particular, the draft should make clear that compatibility-mode
-participation does not carry the same accountability meaning for current
-association as authenticated participation.
+- all normative PPD participation is authenticated participation
+- a direct participant that cannot authenticate itself meaningfully is not a
+  conforming direct participant
+- extremely constrained devices that cannot meet the minimum authenticated
+  direct-participant bar should participate indirectly through a trusted
+  intermediary, or remain non-participating
+
+This preserves the protocol's core security purpose while still leaving room
+to support low-end home-IoT ecosystems through gateways, hubs, or comparable
+controllers.
 
 ### What To Avoid In The Draft
 
@@ -157,12 +164,14 @@ association as authenticated participation.
 The draft should tell the security story in this sequence:
 
 1. participant-facing security is profile-based rather than monolithic
-2. compatibility participation exists, but is explicitly lower assurance
+2. all normative participation is authenticated participation
 3. authenticated participation is defined by a clear accountability floor
 4. authenticated participation can be realized by a small set of participant-
    class-aligned profiles
 5. direct-device profiles are baseline
-6. backend-mediated participation is an extension profile that still has to
+6. extremely constrained devices that cannot meet that bar are indirect or
+   non-participating
+7. backend-mediated participation is an extension profile that still has to
    satisfy the same core accountability properties
 
 This keeps the draft specific where interoperability depends on specificity,
@@ -174,11 +183,15 @@ Likely edits to the protocol draft:
 
 - define explicit top-level security profiles instead of relying on generic
   trust language alone
+- use concise profile identifiers and metadata naming that make authenticated
+  participation the baseline assumption rather than repeating `auth-` on every
+  profile value
 - describe the accountability floor for authenticated participation as a set of
   required properties
-- distinguish compatibility participation clearly from authenticated
-  participation
 - scope baseline protocol text around direct-device authenticated profiles
+- state clearly that no unauthenticated direct-participation profile exists
+- direct extremely constrained devices toward trusted-intermediary
+  participation instead of weakening the direct profile
 - reserve backend-mediated participation for an extension profile that must
   still satisfy the same core security properties
 - defer selection of one universal mechanism until the participant-profile
@@ -189,11 +202,12 @@ Likely edits to the protocol draft:
 
 The shortest coherent statement of this decision is:
 
-"The protocol defines explicit security profiles. A lower-assurance
-compatibility profile is distinct from authenticated participation.
+"The protocol defines explicit authenticated security profiles.
 Authenticated participation is defined by endpoint authentication, participant
 authentication, policy-instance integrity, and freshness protection sufficient
 to make current association and acknowledgment meaningful. Baseline protocol
 scope covers direct-device authenticated participation, while backend-mediated
 participation is treated as an extension profile that must still satisfy the
-same core accountability properties."
+same core accountability properties. Extremely constrained devices that cannot
+meet the minimum authenticated direct-participant bar are expected to
+participate indirectly or remain non-participating."

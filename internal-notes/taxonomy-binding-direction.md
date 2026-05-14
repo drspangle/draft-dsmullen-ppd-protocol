@@ -145,6 +145,8 @@ Likely edits to the protocol draft:
   closed enumerated values
 - treat taxonomy release metadata as secondary validation context rather than
   the sole semantic key
+- when service metadata advertises taxonomy support, name that surface in terms
+  of supported taxonomy releases rather than generic taxonomy versions
 - define unknown-term and extension behavior explicitly
 - keep the message schema stable even as the vocabulary grows
 - choose a wire-level term-identifier strategy that stays reasonably close to

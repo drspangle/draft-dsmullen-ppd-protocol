@@ -51,6 +51,12 @@ Do not put protocol semantics here if they belong in the draft itself.
 - `declaration-shape-direction.md`: working direction for replacing flat
   declaration capability arrays with atomic descriptive statements while
   keeping combination semantics in the taxonomy work
+- `operation-response-shapes-direction.md`: working direction for defining the
+  remaining successful response bodies, including the minimal Registration
+  Result Object and the open declaration/acknowledgment response questions
+- `trusted-intermediary-examples.md`: concrete examples and criticism-response
+  framing for what can count as a trusted intermediary for extremely
+  constrained devices
 - `template-operations.md`: local render and eventual publication workflow notes
 - `source-material.md`: protocol-relevant design artifacts in `habanero-dev`
 - `scripts/`: local WSL helper scripts copied from the architecture repo

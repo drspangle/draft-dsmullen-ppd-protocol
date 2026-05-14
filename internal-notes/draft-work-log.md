@@ -137,3 +137,33 @@ It is not part of the rendered Internet-Draft.
   taxonomy Internet-Draft revision with a generic release identifier
   (`ppd-core-2026-05`) so the examples do not drift every time the taxonomy
   draft is republished.
+- Removed the lower-assurance `compatibility` profile from the normative
+  protocol model. The current direction is that all conforming PPD
+  participation is authenticated, while extremely constrained devices that
+  cannot meet the minimum authenticated direct-participant bar are expected to
+  participate indirectly through a trusted intermediary or remain
+  non-participating.
+- Added `internal-notes/trusted-intermediary-examples.md` to capture concrete
+  intermediary classes, exclusion cases, and a concise criticism-response
+  framing for extremely constrained devices that cannot participate directly.
+- Refined the comparison-outcome model so that, when a deployment exposes a
+  comparison result at the baseline participant-facing protocol boundary, it is
+  carried as an optional declaration-path Comparison Outcome Object rather than
+  being overloaded into policy retrieval or acknowledgment.
+- Renamed the Service Metadata Object field from `taxonomy_versions` to
+  `supported_taxonomy_releases` so the metadata surface matches the newer
+  taxonomy model, where release identifiers are secondary validation context
+  rather than the primary semantic hook.
+- Tightened the declaration-path comparison model so it is explicitly
+  diagnostic only: no metadata flag, no participant-controlled request hook,
+  and no baseline bargaining or homeowner-prompt channel through comparison
+  outcomes.
+- Tightened the security-profile naming so the metadata field is now
+  `security_profile` and the profile identifiers are `direct-constrained`,
+  `direct-certificate`, and `backend-mediated`, with authenticated
+  participation treated as the baseline assumption rather than repeated in
+  every profile token.
+- Added `internal-notes/operation-response-shapes-direction.md` to capture the
+  response-shape cleanup, including the decision that registration success
+  should return only a canonical `device_id` and the remaining declaration and
+  acknowledgment success-response questions.

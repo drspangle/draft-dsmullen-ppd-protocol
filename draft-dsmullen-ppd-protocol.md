@@ -165,30 +165,29 @@ message semantics.
 ## Security Profiles
 
 This protocol defines explicit participant-facing security profiles.
-The metadata `security_mode` value identifies which profile a participant-facing
+The metadata `security_profile` value identifies which profile a participant-facing
 service endpoint expects.
 
 The following profile identifiers are defined:
 
-* `compatibility`:
-  lower-assurance participation for constrained or transitional deployments;
-* `auth-constrained-direct`:
+* `direct-constrained`:
   authenticated direct-device participation for devices that can meet the
-  accountability floor without full certificate lifecycle expectations;
-* `auth-certificate-direct`:
+  minimum authenticated direct-participant bar without full certificate
+  lifecycle expectations;
+* `direct-certificate`:
   authenticated direct-device participation for devices that can support
   stronger certificate-capable deployments; and
-* `auth-backend-mediated`:
+* `backend-mediated`:
   authenticated participation by a service acting on behalf of a device.
 
 The baseline interoperable profile set for this document consists of
-`compatibility`, `auth-constrained-direct`, and
-`auth-certificate-direct`.
-`auth-backend-mediated` is an extension profile.
+`direct-constrained` and `direct-certificate`.
+`backend-mediated` is an extension profile.
 
-The `compatibility` profile is intentionally lower assurance.
-It MUST NOT be treated as equivalent to authenticated participation for claims
-about accountability-grade current association.
+This document does not define an unauthenticated direct-participation profile.
+Extremely constrained devices that cannot satisfy the minimum authenticated
+direct-participant bar are expected to participate indirectly through a trusted
+intermediary, or remain non-participating.
 
 Authenticated participation, regardless of mechanism family, MUST provide:
 
@@ -309,6 +308,9 @@ PPD.
 Devices that do not participate remain outside the active message exchange.
 Their presence may influence local management or enforcement decisions, but
 such decisions are out of scope for this protocol.
+Extremely constrained devices that cannot satisfy the minimum authenticated
+direct-participant bar MAY instead be represented indirectly by a trusted
+intermediary that participates on their behalf.
 
 ## Comparison Outcome Categories
 
@@ -318,8 +320,9 @@ That depends on household intent, participant capability, and deployment logic.
 
 When a deployment compares participant-side descriptive or policy-related
 inputs against household policy and needs to expose the result at the protocol
-boundary, it SHOULD classify the result using one of the following coarse
-outcome categories:
+boundary in the baseline participant-facing protocol, it SHOULD return a
+Comparison Outcome Object on the declaration path and classify the result
+using one of the following coarse outcome categories:
 
 * `compatible`:
   the compared inputs can coexist without further action;
@@ -427,6 +430,14 @@ A declaration carries one or more descriptive statements that use the taxonomy
 dimensions defined in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as data type,
 purpose, action, source, and destination.
 The taxonomy document defines the meaning and composition of those dimensions.
+
+A successful response MAY be a Comparison Outcome Object when the service
+chooses to expose the result of comparing the declaration against household
+policy or effective-policy constraints at this boundary.
+Services are not required to compute or return such an outcome synchronously.
+This document does not define a participant-controlled request flag for
+comparison outcomes, and this declaration path MUST NOT be treated as a
+baseline negotiation or homeowner-prompt channel.
 
 ## Effective Policy Retrieval
 
@@ -543,13 +554,15 @@ It contains:
   whether the service accepts Device Declaration Objects;
 * `ack_supported` (required, boolean):
   whether the service accepts Policy Acknowledgment Objects;
-* `security_mode` (required, text):
-  deployment security profile identifier, currently one of `compatibility`,
-  `auth-constrained-direct`, `auth-certificate-direct`, or the extension value
-  `auth-backend-mediated`; and
-* `taxonomy_versions` (optional, array of text):
+* `security_profile` (required, text):
+  deployment security profile identifier, currently one of
+  `direct-constrained`, `direct-certificate`, or the extension value
+  `backend-mediated`; and
+* `supported_taxonomy_releases` (optional, array of text):
   taxonomy release identifiers understood by the service for validation and
   reproducibility.
+  These release identifiers are secondary validation context, not the primary
+  semantic hook for taxonomy-bearing terms.
 
 ## Device Registration Object
 
@@ -635,6 +648,27 @@ It contains:
   destination or handling target described by the participant; and
 * `constraints` (optional, Constraints Object):
   structured qualifiers that refine the statement.
+
+## Comparison Outcome Object
+
+The comparison outcome object carries an optional coarse result for
+declaration-to-policy comparison on the declaration path.
+It is diagnostic and descriptive.
+It does not change the meaning of the Effective Policy Object and it is not
+part of acknowledgment semantics.
+It MUST NOT be treated as a request for policy relaxation, an invitation to
+begin a participant-driven bargaining loop, or a trigger for baseline
+homeowner consent prompting.
+
+It contains:
+
+* `declaration_id` (required, text):
+  declaration instance to which this comparison result applies;
+* `outcome` (required, text):
+  one of `compatible`, `conditionally_satisfiable`, `decision_required`,
+  `unsatisfiable`, or `indeterminate`; and
+* `detail` (optional, text):
+  brief human-readable explanation suitable for diagnostics or operator review.
 
 ### Example Device Declaration Object
 
@@ -937,13 +971,13 @@ A participant MUST authenticate the selected PPD service endpoint according to
 the deployment's security profile before treating policy information as
 authoritative.
 
-The `compatibility` profile is deliberately lower assurance than authenticated
+All normative PPD participation defined by this document is authenticated
 participation.
-Deployments MUST NOT present it as equivalent to
-`auth-constrained-direct` or `auth-certificate-direct` when making claims about
-protected current association.
+Deployments MUST NOT present unauthenticated local testing or demo operation as
+equivalent to `direct-constrained` or `direct-certificate`
+participation when making claims about protected current association.
 
-If a deployment claims authenticated participation, it MUST provide:
+All normative PPD participation defined by this document MUST provide:
 
 * participant authentication sufficient to bind registration and
   acknowledgment state to the same participant identity;
