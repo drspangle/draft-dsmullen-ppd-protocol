@@ -3,14 +3,19 @@
 These notes are local to this repository and are intentionally kept separate
 from the functional draft contents.
 
+Use this README to decide which existing note file should absorb new protocol
+draft work before creating another one.
+
 Use these files for:
 
 - protocol-draft editorial history
 - local build and publication commands
-- source-material pointers into `habanero-dev`
+- source-material pointers into the related gateway repository
 - open drafting questions that are not yet ready to become Internet-Draft text
 
 Do not put protocol semantics here if they belong in the draft itself.
+
+## Start Here
 
 ## Files
 
@@ -58,5 +63,5 @@ Do not put protocol semantics here if they belong in the draft itself.
   framing for what can count as a trusted intermediary for extremely
   constrained devices
 - `template-operations.md`: local render and eventual publication workflow notes
-- `source-material.md`: protocol-relevant design artifacts in `habanero-dev`
+- `source-material.md`: protocol-relevant design artifacts in the related gateway repository
 - `scripts/`: local WSL helper scripts copied from the architecture repo

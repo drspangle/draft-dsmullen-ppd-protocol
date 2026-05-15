@@ -1,7 +1,8 @@
 # Source Material
 
-This note tracks the most relevant protocol-design artifacts in
-`C:\Users\Daniel Smullen\Documents\habanero-dev`.
+This note tracks the most relevant protocol-design artifacts in the related
+gateway repository, typically checked out locally as
+`../habanero-ppd-gateway`.
 
 ## Primary Inputs
 
