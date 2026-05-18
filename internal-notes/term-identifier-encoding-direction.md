@@ -101,6 +101,14 @@ The protocol should define:
 - unknown-term behavior is explicit
 - extension behavior is explicit
 
+That explicit behavior should distinguish two different failure classes:
+
+- `term-resolution-failed` when the compact form cannot be deterministically
+  expanded at all, such as because a required non-core prefix declaration is
+  missing or a reserved core prefix is remapped
+- `unsupported-taxonomy-term` when deterministic expansion succeeds but the
+  resulting stable term is not supported for the relevant operation or profile
+
 ### Namespace Scope: Keep It Minimal
 
 The draft does not need a heavy namespace-processing model.

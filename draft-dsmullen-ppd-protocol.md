@@ -523,6 +523,14 @@ Deployments MAY use company-specific or other non-core taxonomies when their
 terms map to the shared core primitives and are declared through the applicable
 taxonomy context.
 
+For baseline interoperability, a compact term identifier MUST use the form
+`prefix:term`.
+The prefix identifies either a reserved core vocabulary or an explicitly
+declared non-core vocabulary.
+The baseline core prefix is `ppd`.
+A receiver MUST NOT silently reinterpret an unresolved compact term as some
+other known term.
+
 ## Taxonomy Context Object
 
 The Taxonomy Context Object carries optional vocabulary-release context and any
@@ -539,6 +547,35 @@ It MAY include:
 Reserved core prefixes MUST NOT be remapped in `prefixes`.
 A Taxonomy Context Object is REQUIRED whenever non-core compact prefixes appear
 in the containing object.
+
+## Term Resolution Behavior
+
+Before processing a taxonomy-bearing field, a receiver MUST be able to
+deterministically expand each compact term identifier into the corresponding
+stable namespace-based term identifier.
+
+For the baseline protocol:
+
+* the core prefix `ppd` MUST be interpreted according to the companion
+  taxonomy work;
+* any non-core prefix used in the containing object MUST appear in the
+  applicable Taxonomy Context Object;
+* reserved core prefixes MUST NOT be redeclared or remapped; and
+* a sender MUST NOT emit a taxonomy-bearing object whose compact identifiers it
+  cannot itself deterministically resolve.
+
+If deterministic expansion fails because a compact identifier is malformed, a
+required non-core prefix declaration is missing, or a reserved core prefix is
+redeclared or remapped, the receiver MUST treat the object as semantically
+unprocessable.
+
+If deterministic expansion succeeds but the resulting stable term identifier is
+not supported for the relevant operation or deployment profile, the receiver
+MUST also treat the object as semantically unprocessable.
+
+When a PPD service endpoint returns a taxonomy-bearing object, it MUST ensure
+that the terms it emits are consistent with any attached Taxonomy Context
+Object.
 
 ## Service Metadata Object
 
@@ -979,11 +1016,14 @@ The initial PPD-specific problem vocabulary is:
   the supplied `policy_id` or `policy_hash` does not identify the current
   policy instance the service expects;
 * `unsupported-taxonomy-term`:
-  the service recognizes the request shape but does not support one or more
-  supplied taxonomy terms;
+  the service recognizes the request shape and can resolve the supplied compact
+  term identifier or identifiers, but does not support one or more resulting
+  taxonomy terms for the relevant operation or deployment profile;
 * `term-resolution-failed`:
-  the service cannot resolve a supplied compact term identifier to usable
-  protocol semantics; and
+  the service cannot deterministically resolve a supplied compact term
+  identifier to usable protocol semantics, such as because the identifier is
+  malformed, a required non-core prefix declaration is missing, or a reserved
+  core prefix was redeclared or remapped; and
 * `policy-authority-unavailable`:
   the participant-facing service cannot currently obtain or materialize the
   effective policy instance it needs to serve.

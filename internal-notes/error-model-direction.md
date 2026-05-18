@@ -60,6 +60,14 @@ protocol-specific problem types, such as:
 - `term-resolution-failed`
 - `policy-authority-unavailable`
 
+Within that pair, the intended distinction is:
+
+- `term-resolution-failed` when the service cannot deterministically expand the
+  supplied compact identifier into a stable term identifier at all
+- `unsupported-taxonomy-term` when deterministic expansion succeeds, but the
+  resulting term is not supported for the relevant operation or deployment
+  profile
+
 These should be treated as protocol-specific reasons carried inside a standard
 problem envelope, not as replacements for HTTP status codes.
 

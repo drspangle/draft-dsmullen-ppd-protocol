@@ -185,3 +185,11 @@ It is not part of the rendered Internet-Draft.
   Acknowledgment Result Object, plus a concrete acknowledgment-result example.
 - Updated the response-shapes direction note so its resolved declaration and
   acknowledgment decisions match the normative draft text.
+- Tightened compact taxonomy term processing so the draft now requires
+  deterministic expansion, reserves `ppd` as the baseline core prefix, and
+  requires explicit non-core prefix declarations when non-core compact terms
+  appear.
+- Clarified the participant-facing distinction between
+  `term-resolution-failed` and `unsupported-taxonomy-term` so malformed or
+  undeclared compact identifiers are separated from resolved-but-unsupported
+  terms.
