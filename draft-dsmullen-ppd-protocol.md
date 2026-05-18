@@ -279,11 +279,24 @@ one of the following:
 * an absolute renewal deadline; or
 * a bounded renewal interval from the time of response.
 
+For baseline interoperability, the minimum renewal procedure is:
+
+1. the participant retrieves the current applicable effective policy instance
+   using `GET /ppd/v1/policy/effective/{device_id}`;
+2. if the returned `policy_id` and `policy_hash` still identify the same policy
+   instance the participant currently treats as associated, the participant
+   renews by sending a fresh Policy Acknowledgment Object for that instance; and
+3. if the returned policy instance differs, or if the service indicates
+   `reassociation-required`, the participant MUST treat the renewal attempt as
+   escalated to reassociation.
+
 If the applicable effective policy instance remains unchanged but the
-participant does not renew before the conveyed freshness limit, the participant
-enters stale association.
-The participant no longer has current association until it completes the
-required renewal procedure.
+participant does not complete that retrieval-and-acknowledgment renewal
+procedure before the conveyed freshness limit, the participant enters stale
+association.
+The participant no longer has current association until it successfully
+completes the minimum renewal procedure or, when required by the service,
+reassociation.
 
 ## Reassociation Triggers
 
@@ -506,7 +519,11 @@ Unless otherwise stated:
   `rule_id` are opaque text strings;
 * timestamp fields use RFC 3339 date-time strings {{?RFC3339}};
 * `policy_hash` uses the form `algorithm:value`, and baseline
-  implementations MUST support `sha256`; and
+  implementations MUST support `sha256`.
+  For the baseline JSON protocol, the hash value is computed over the UTF-8
+  octets of the Effective Policy Object serialized using the JSON
+  Canonicalization Scheme (JCS) {{?RFC8785}}, after omitting the `policy_hash`
+  member itself; and
 * `renewal_interval` is a positive integer count of seconds.
 
 ## Compact Term Identifiers
@@ -764,7 +781,10 @@ It contains:
 * `policy_id` (required, text):
   stable identifier for the policy instance to be acknowledged;
 * `policy_hash` (required, text):
-  stable content hash for the policy instance;
+  stable content hash for the policy instance.
+  This hash binds the full returned policy instance, including freshness and
+  provenance fields, as serialized under the baseline canonicalization rule
+  above;
 * `rules` (required, array of Policy Rule Objects):
   normative rule set for this effective policy instance;
 * `renew_by` (optional, RFC 3339 date-time string):
@@ -854,7 +874,8 @@ It contains:
 * `policy_id` (required, text):
   policy instance identifier being acknowledged; and
 * `policy_hash` (required, text):
-  content hash of the acknowledged policy instance.
+  content hash of the acknowledged policy instance, computed according to the
+  baseline `policy_hash` definition above.
 
 This object is evidentiary only.
 It is a receipt for a specific policy instance and MUST NOT be interpreted as a

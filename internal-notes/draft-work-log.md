@@ -198,3 +198,11 @@ It is not part of the rendered Internet-Draft.
   repo-local Node.js toolchain under `.tooling/` for `idnits`, and exposes an
   explicit `validate-submission` command for `make next` plus enforced
   repo-local `idnits` validation.
+- Defined the baseline `policy_hash` computation so it is now interoperable:
+  the hash covers the Effective Policy Object serialized as canonical JSON per
+  RFC 8785, with the `policy_hash` member itself omitted from the hashed form.
+- Defined the minimum renewal procedure explicitly as effective-policy retrieval
+  followed, when the current policy instance is unchanged, by a fresh
+  acknowledgment of that same instance; if the returned policy instance differs
+  or the service returns `reassociation-required`, renewal escalates to
+  reassociation.
