@@ -5,7 +5,7 @@
 Network Working Group                                         D. Smullen
 Internet-Draft                                                B. Scriber
 Intended status: Informational                                 CableLabs
-Expires: 16 November 2026                                    15 May 2026
+Expires: 19 November 2026                                    18 May 2026
 
 
          Privacy Preference Declaration Protocol Specification
@@ -52,7 +52,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 16 November 2026.
+   This Internet-Draft will expire on 19 November 2026.
 
 Copyright Notice
 
@@ -99,18 +99,21 @@ Table of Contents
    7.  Message Objects
      7.1.  Compact Term Identifiers
      7.2.  Taxonomy Context Object
-     7.3.  Service Metadata Object
-     7.4.  Device Registration Object
-     7.5.  Device Declaration Object
-     7.6.  Declaration Statement Object
-     7.7.  Comparison Outcome Object
-       7.7.1.  Example Device Declaration Object
-     7.8.  Effective Policy Object
-     7.9.  Policy Rule Object
-     7.10. Constraints Object
-     7.11. Policy Acknowledgment Object
-       7.11.1.  Example Effective Policy and Acknowledgment
-     7.12. Error Object
+     7.3.  Term Resolution Behavior
+     7.4.  Service Metadata Object
+     7.5.  Device Registration Object
+     7.6.  Registration Result Object
+     7.7.  Device Declaration Object
+     7.8.  Declaration Statement Object
+     7.9.  Comparison Outcome Object
+       7.9.1.  Example Device Declaration Object
+     7.10. Effective Policy Object
+     7.11. Policy Rule Object
+     7.12. Constraints Object
+     7.13. Policy Acknowledgment Object
+     7.14. Acknowledgment Result Object
+       7.14.1.  Example Effective Policy and Acknowledgment
+     7.15. Error Object
    8.  Error Handling
    9.  Security Considerations
    10. Internationalization Considerations
@@ -544,9 +547,11 @@ Table of Contents
 
    *  ip_address
 
-   A successful response SHOULD return the canonical device_id and any
-   service metadata the participant needs for later operations, such as
-   the participant- facing service URI.
+   A successful response MUST be a Registration Result Object.
+   Registration success returns the canonical participant identity
+   established or confirmed by the service.  It MUST NOT repeat
+   metadata-confirmation fields such as the participant-facing service
+   URI, supported feature flags, or security profile.
 
 6.4.  Declaration
 
@@ -569,14 +574,15 @@ Table of Contents
    taxonomy document defines the meaning and composition of those
    dimensions.
 
-   A successful response MAY be a Comparison Outcome Object when the
-   service chooses to expose the result of comparing the declaration
-   against household policy or effective-policy constraints at this
-   boundary.  Services are not required to compute or return such an
-   outcome synchronously.  This document does not define a participant-
-   controlled request flag for comparison outcomes, and this declaration
-   path MUST NOT be treated as a baseline negotiation or homeowner-
-   prompt channel.
+   A successful declaration response without comparison detail SHOULD
+   use 204 No Content.  When the service chooses to expose the result of
+   comparing the declaration against household policy or effective-
+   policy constraints at this boundary, a successful response MUST be
+   200 OK with a Comparison Outcome Object.  Services are not required
+   to compute or return such an outcome synchronously.  This document
+   does not define a participant-controlled request flag for comparison
+   outcomes, and this declaration path MUST NOT be treated as a baseline
+   negotiation or homeowner-prompt channel.
 
 6.5.  Effective Policy Retrieval
 
@@ -630,14 +636,9 @@ Table of Contents
    status reporting, that behavior MUST be defined separately from the
    baseline acknowledgment.
 
-   A successful acknowledgment response SHOULD include:
-
-   *  the resulting association state, where association_status if
-      present SHOULD be one of not_associated, associated,
-      needs_reassociation, stale_association, or broken; and
-
-   *  the next renew_by or renewal_interval value to be used for
-      maintaining current association.
+   A successful acknowledgment response MUST be an Acknowledgment Result
+   Object.  It returns the resulting association state and the next
+   freshness value to be used for maintaining current association.
 
    An acknowledgment that refers to a non-current or mismatched policy
    instance MUST be rejected.
@@ -674,6 +675,12 @@ Table of Contents
    terms map to the shared core primitives and are declared through the
    applicable taxonomy context.
 
+   For baseline interoperability, a compact term identifier MUST use the
+   form prefix:term.  The prefix identifies either a reserved core
+   vocabulary or an explicitly declared non-core vocabulary.  The
+   baseline core prefix is ppd.  A receiver MUST NOT silently
+   reinterpret an unresolved compact term as some other known term.
+
 7.2.  Taxonomy Context Object
 
    The Taxonomy Context Object carries optional vocabulary-release
@@ -691,7 +698,40 @@ Table of Contents
    Context Object is REQUIRED whenever non-core compact prefixes appear
    in the containing object.
 
-7.3.  Service Metadata Object
+7.3.  Term Resolution Behavior
+
+   Before processing a taxonomy-bearing field, a receiver MUST be able
+   to deterministically expand each compact term identifier into the
+   corresponding stable namespace-based term identifier.
+
+   For the baseline protocol:
+
+   *  the core prefix ppd MUST be interpreted according to the companion
+      taxonomy work;
+
+   *  any non-core prefix used in the containing object MUST appear in
+      the applicable Taxonomy Context Object;
+
+   *  reserved core prefixes MUST NOT be redeclared or remapped; and
+
+   *  a sender MUST NOT emit a taxonomy-bearing object whose compact
+      identifiers it cannot itself deterministically resolve.
+
+   If deterministic expansion fails because a compact identifier is
+   malformed, a required non-core prefix declaration is missing, or a
+   reserved core prefix is redeclared or remapped, the receiver MUST
+   treat the object as semantically unprocessable.
+
+   If deterministic expansion succeeds but the resulting stable term
+   identifier is not supported for the relevant operation or deployment
+   profile, the receiver MUST also treat the object as semantically
+   unprocessable.
+
+   When a PPD service endpoint returns a taxonomy-bearing object, it
+   MUST ensure that the terms it emits are consistent with any attached
+   Taxonomy Context Object.
+
+7.4.  Service Metadata Object
 
    The service metadata object describes a candidate endpoint before
    deeper interaction.  It contains:
@@ -718,7 +758,7 @@ Table of Contents
       validation context, not the primary semantic hook for taxonomy-
       bearing terms.
 
-7.4.  Device Registration Object
+7.5.  Device Registration Object
 
    The registration object identifies the participant and carries
    optional device metadata.  The stable identifier is device_id.  Other
@@ -746,7 +786,17 @@ Table of Contents
    *  ip_address (optional, text): participant-reported network address
       when the deployment profile permits it.
 
-7.5.  Device Declaration Object
+7.6.  Registration Result Object
+
+   The registration result object confirms the canonical participant
+   identity bound by registration.
+
+   It contains:
+
+   *  device_id (required, text): canonical participant identifier
+      established or confirmed by the service.
+
+7.7.  Device Declaration Object
 
    The declaration object carries participant-supplied capability or
    data-handling information.  At minimum it contains device_id,
@@ -781,7 +831,7 @@ Table of Contents
    If a declaration uses any non-core compact prefix in its statements
    or constraints, the taxonomy object is REQUIRED.
 
-7.6.  Declaration Statement Object
+7.8.  Declaration Statement Object
 
    A Declaration Statement Object is an atomic descriptive statement
    inside a Device Declaration Object.  It mirrors the same core
@@ -812,7 +862,7 @@ Table of Contents
    *  constraints (optional, Constraints Object): structured qualifiers
       that refine the statement.
 
-7.7.  Comparison Outcome Object
+7.9.  Comparison Outcome Object
 
    The comparison outcome object carries an optional coarse result for
    declaration-to-policy comparison on the declaration path.  It is
@@ -834,7 +884,7 @@ Table of Contents
    *  detail (optional, text): brief human-readable explanation suitable
       for diagnostics or operator review.
 
-7.7.1.  Example Device Declaration Object
+7.9.1.  Example Device Declaration Object
 
    {
      "device_id": "doorbell-7",
@@ -865,7 +915,7 @@ Table of Contents
      ]
    }
 
-7.8.  Effective Policy Object
+7.10.  Effective Policy Object
 
    The effective policy object represents the policy instance the
    participant must acknowledge.  It contains the policy identifier,
@@ -910,7 +960,7 @@ Table of Contents
    validity outside that lifecycle.  If any rule uses a non-core compact
    prefix, the taxonomy object is REQUIRED.
 
-7.9.  Policy Rule Object
+7.11.  Policy Rule Object
 
    A Policy Rule Object is an atomic normative statement inside an
    Effective Policy Object.
@@ -950,7 +1000,7 @@ Table of Contents
    contradictions should be resolved before the effective policy is
    returned.
 
-7.10.  Constraints Object
+7.12.  Constraints Object
 
    The Constraints Object preserves a structured extension point for
    qualifiers without requiring a large qualifier language in the
@@ -970,7 +1020,7 @@ Table of Contents
    structured constraint members.  A Constraints Object MUST NOT be
    treated as an unstructured free-form text field.
 
-7.11.  Policy Acknowledgment Object
+7.13.  Policy Acknowledgment Object
 
    The acknowledgment object binds a participant identifier to a
    specific policy instance and policy hash.  Deployments that claim
@@ -992,7 +1042,29 @@ Table of Contents
    policy instance and MUST NOT be interpreted as a claim of
    compatibility or compliance.
 
-7.11.1.  Example Effective Policy and Acknowledgment
+7.14.  Acknowledgment Result Object
+
+   The acknowledgment result object confirms the lifecycle state after
+   the service records a protected acknowledgment.
+
+   It contains:
+
+   *  association_status (required, text): resulting association state,
+      currently one of not_associated, associated, needs_reassociation,
+      stale_association, or broken;
+
+   *  renew_by (optional, RFC 3339 date-time string): absolute deadline
+      by which current association must be renewed if this field is
+      used; and
+
+   *  renewal_interval (optional, positive integer seconds): bounded
+      interval after response generation within which current
+      association must be renewed if this field is used.
+
+   An Acknowledgment Result Object MUST contain exactly one of renew_by
+   or renewal_interval.
+
+7.14.1.  Example Effective Policy and Acknowledgment
 
    An Effective Policy Object example:
 
@@ -1040,7 +1112,14 @@ Table of Contents
      "policy_hash": "sha256:8de72af3c4d6d8c9f0b0f6a4a13c8df0f716c9c0a1130d27c855a2dd8dd8e8c7"
    }
 
-7.12.  Error Object
+   An Acknowledgment Result Object example is:
+
+   {
+     "association_status": "associated",
+     "renewal_interval": 900
+   }
+
+7.15.  Error Object
 
    Error responses SHOULD use application/problem+json and a structured
    error object with at least:
@@ -1087,7 +1166,10 @@ Table of Contents
    The baseline protocol uses conventional HTTP status codes.  At
    minimum, participants need to handle:
 
-   *  200 OK for successful retrieval or update;
+   *  200 OK for successful retrieval or update with a response body;
+
+   *  204 No Content for successful declaration acceptance when no
+      diagnostic response body is returned;
 
    *  400 Bad Request for invalid payloads or missing required fields;
 
@@ -1129,10 +1211,15 @@ Table of Contents
       does not identify the current policy instance the service expects;
 
    *  unsupported-taxonomy-term: the service recognizes the request
-      shape but does not support one or more supplied taxonomy terms;
+      shape and can resolve the supplied compact term identifier or
+      identifiers, but does not support one or more resulting taxonomy
+      terms for the relevant operation or deployment profile;
 
-   *  term-resolution-failed: the service cannot resolve a supplied
-      compact term identifier to usable protocol semantics; and
+   *  term-resolution-failed: the service cannot deterministically
+      resolve a supplied compact term identifier to usable protocol
+      semantics, such as because the identifier is malformed, a required
+      non-core prefix declaration is missing, or a reserved core prefix
+      was redeclared or remapped; and
 
    *  policy-authority-unavailable: the participant-facing service
       cannot currently obtain or materialize the effective policy
