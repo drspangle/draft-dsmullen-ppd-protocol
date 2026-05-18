@@ -193,3 +193,8 @@ It is not part of the rendered Internet-Draft.
   `term-resolution-failed` and `unsupported-taxonomy-term` so malformed or
   undeclared compact identifiers are separated from resolved-but-unsupported
   terms.
+- Tightened the repo-local draft bootstrap contract so it now distinguishes
+  render readiness from submission readiness, can optionally provision a
+  repo-local Node.js toolchain under `.tooling/` for `idnits`, and exposes an
+  explicit `validate-submission` command for `make next` plus enforced
+  repo-local `idnits` validation.

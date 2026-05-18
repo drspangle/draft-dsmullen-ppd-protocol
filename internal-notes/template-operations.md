@@ -10,6 +10,26 @@ These notes summarize how this repository uses Martin Thomson's
 - `internal-notes/` is for local notes only and is excluded from the editor's
   copy workflow trigger.
 
+## Local Submission Validation
+
+For this repository, pre-submit validation is a repo-local workflow, not a
+shared workspace workflow.
+
+Use the repository bootstrap first:
+
+```sh
+python3 scripts/setup_draft_workstation.py bootstrap --submission-tools
+```
+
+Then build the next versioned XML and run `idnits` with:
+
+```sh
+python3 scripts/setup_draft_workstation.py validate-submission
+```
+
+On native macOS, Linux, or Windows, the bootstrap command installs a repo-local
+Node.js toolchain under `.tooling/` when `npm` is not already available.
+
 ## Local Rendering On Windows
 
 Use Ubuntu under WSL for local rendering.
@@ -57,7 +77,9 @@ These points were re-checked against Martin Thomson's upstream
   Linux distribution such as Ubuntu.
 - The minimum local toolchain is POSIX `make`, `python3` with `pip` and
   `venv`, and `ruby` with `gem` and `bundler`. `npm` and `xmllint` are also
-  expected by this repo's local environment check script.
+  expected by this repo's local pre-submit validation path. This repository's
+  native bootstrap now provisions a repo-local Node.js toolchain under
+  `.tooling/` when `npm` is missing.
 - The preferred automated submission path is an annotated draft tag pushed to
   GitHub. For this repo that means:
 

@@ -9,9 +9,11 @@
 /*-[0-9][0-9].xml
 /.*.mk
 /.gems/
+/.tooling/
 /.idea/
 /.refcache
 /.venv/
+__pycache__/
 /.vscode/
 /lib
 /node_modules/
