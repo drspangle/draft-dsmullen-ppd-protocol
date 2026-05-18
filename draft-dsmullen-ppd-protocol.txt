@@ -397,11 +397,26 @@ Table of Contents
 
    *  a bounded renewal interval from the time of response.
 
+   For baseline interoperability, the minimum renewal procedure is:
+
+   1.  the participant retrieves the current applicable effective policy
+       instance using GET /ppd/v1/policy/effective/{device_id};
+
+   2.  if the returned policy_id and policy_hash still identify the same
+       policy instance the participant currently treats as associated,
+       the participant renews by sending a fresh Policy Acknowledgment
+       Object for that instance; and
+
+   3.  if the returned policy instance differs, or if the service
+       indicates reassociation-required, the participant MUST treat the
+       renewal attempt as escalated to reassociation.
+
    If the applicable effective policy instance remains unchanged but the
-   participant does not renew before the conveyed freshness limit, the
+   participant does not complete that retrieval-and-acknowledgment
+   renewal procedure before the conveyed freshness limit, the
    participant enters stale association.  The participant no longer has
-   current association until it completes the required renewal
-   procedure.
+   current association until it successfully completes the minimum
+   renewal procedure or, when required by the service, reassociation.
 
 5.3.  Reassociation Triggers
 
@@ -654,7 +669,11 @@ Table of Contents
    *  timestamp fields use RFC 3339 date-time strings [RFC3339];
 
    *  policy_hash uses the form algorithm:value, and baseline
-      implementations MUST support sha256; and
+      implementations MUST support sha256.  For the baseline JSON
+      protocol, the hash value is computed over the UTF-8 octets of the
+      Effective Policy Object serialized using the JSON Canonicalization
+      Scheme (JCS) [RFC8785], after omitting the policy_hash member
+      itself; and
 
    *  renewal_interval is a positive integer count of seconds.
 
@@ -929,7 +948,9 @@ Table of Contents
       instance to be acknowledged;
 
    *  policy_hash (required, text): stable content hash for the policy
-      instance;
+      instance.  This hash binds the full returned policy instance,
+      including freshness and provenance fields, as serialized under the
+      baseline canonicalization rule above;
 
    *  rules (required, array of Policy Rule Objects): normative rule set
       for this effective policy instance;
@@ -1036,7 +1057,8 @@ Table of Contents
       acknowledged; and
 
    *  policy_hash (required, text): content hash of the acknowledged
-      policy instance.
+      policy instance, computed according to the baseline policy_hash
+      definition above.
 
    This object is evidentiary only.  It is a receipt for a specific
    policy instance and MUST NOT be interpreted as a claim of
@@ -1346,6 +1368,11 @@ Table of Contents
               Internationalized Strings in Application Protocols",
               RFC 7564, DOI 10.17487/RFC7564, May 2015,
               <https://www.rfc-editor.org/rfc/rfc7564>.
+
+   [RFC8785]  Rundgren, A., Jordan, B., and S. Erdtman, "JSON
+              Canonicalization Scheme (JCS)", RFC 8785,
+              DOI 10.17487/RFC8785, June 2020,
+              <https://www.rfc-editor.org/rfc/rfc8785>.
 
 Authors' Addresses
 

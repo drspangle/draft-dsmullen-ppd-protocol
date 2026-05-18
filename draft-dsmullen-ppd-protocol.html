@@ -1714,11 +1714,30 @@ one of the following:<a href="#section-5.2-2" class="pilcrow">¶</a></p>
             <p id="section-5.2-3.2.1">a bounded renewal interval from the time of response.<a href="#section-5.2-3.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-5.2-4">If the applicable effective policy instance remains unchanged but the
-participant does not renew before the conveyed freshness limit, the participant
-enters stale association.
-The participant no longer has current association until it completes the
-required renewal procedure.<a href="#section-5.2-4" class="pilcrow">¶</a></p>
+<p id="section-5.2-4">For baseline interoperability, the minimum renewal procedure is:<a href="#section-5.2-4" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-5.2-5">
+<li id="section-5.2-5.1">
+            <p id="section-5.2-5.1.1">the participant retrieves the current applicable effective policy instance
+using <code>GET /ppd/v1/policy/effective/{device_id}</code>;<a href="#section-5.2-5.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.2-5.2">
+            <p id="section-5.2-5.2.1">if the returned <code>policy_id</code> and <code>policy_hash</code> still identify the same policy
+instance the participant currently treats as associated, the participant
+renews by sending a fresh Policy Acknowledgment Object for that instance; and<a href="#section-5.2-5.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.2-5.3">
+            <p id="section-5.2-5.3.1">if the returned policy instance differs, or if the service indicates
+<code>reassociation-required</code>, the participant <span class="bcp14">MUST</span> treat the renewal attempt as
+escalated to reassociation.<a href="#section-5.2-5.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-5.2-6">If the applicable effective policy instance remains unchanged but the
+participant does not complete that retrieval-and-acknowledgment renewal
+procedure before the conveyed freshness limit, the participant enters stale
+association.
+The participant no longer has current association until it successfully
+completes the minimum renewal procedure or, when required by the service,
+reassociation.<a href="#section-5.2-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="reassociation-triggers">
@@ -2072,7 +2091,11 @@ Unless otherwise stated:<a href="#section-7-1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-2.3">
           <p id="section-7-2.3.1"><code>policy_hash</code> uses the form <code>algorithm:value</code>, and baseline
-implementations <span class="bcp14">MUST</span> support <code>sha256</code>; and<a href="#section-7-2.3.1" class="pilcrow">¶</a></p>
+implementations <span class="bcp14">MUST</span> support <code>sha256</code>.
+For the baseline JSON protocol, the hash value is computed over the UTF-8
+octets of the Effective Policy Object serialized using the JSON
+Canonicalization Scheme (JCS) <span>[<a href="#RFC8785" class="cite xref">RFC8785</a>]</span>, after omitting the <code>policy_hash</code>
+member itself; and<a href="#section-7-2.3.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-7-2.4">
           <p id="section-7-2.4.1"><code>renewal_interval</code> is a positive integer count of seconds.<a href="#section-7-2.4.1" class="pilcrow">¶</a></p>
@@ -2446,7 +2469,10 @@ stable identifier for the policy instance to be acknowledged;<a href="#section-7
 </li>
           <li class="normal" id="section-7.10-3.2">
             <p id="section-7.10-3.2.1"><code>policy_hash</code> (required, text):
-stable content hash for the policy instance;<a href="#section-7.10-3.2.1" class="pilcrow">¶</a></p>
+stable content hash for the policy instance.
+This hash binds the full returned policy instance, including freshness and
+provenance fields, as serialized under the baseline canonicalization rule
+above;<a href="#section-7.10-3.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.10-3.3">
             <p id="section-7.10-3.3.1"><code>rules</code> (required, array of Policy Rule Objects):
@@ -2584,7 +2610,8 @@ policy instance identifier being acknowledged; and<a href="#section-7.13-3.2.1" 
 </li>
           <li class="normal" id="section-7.13-3.3">
             <p id="section-7.13-3.3.1"><code>policy_hash</code> (required, text):
-content hash of the acknowledged policy instance.<a href="#section-7.13-3.3.1" class="pilcrow">¶</a></p>
+content hash of the acknowledged policy instance, computed according to the
+baseline <code>policy_hash</code> definition above.<a href="#section-7.13-3.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-7.13-4">This object is evidentiary only.
@@ -2991,8 +3018,12 @@ considered.<a href="#section-10-1" class="pilcrow">¶</a></p>
 <span class="refAuthor">Farrell, S.</span> and <span class="refAuthor">H. Tschofenig</span>, <span class="refTitle">"Pervasive Monitoring Is an Attack"</span>, <span class="seriesInfo">BCP 188</span>, <span class="seriesInfo">RFC 7258</span>, <span class="seriesInfo">DOI 10.17487/RFC7258</span>, <time datetime="2014-05" class="refDate">May 2014</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7258">https://www.rfc-editor.org/rfc/rfc7258</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC7564">[RFC7564]</dt>
-      <dd>
+        <dd>
 <span class="refAuthor">Saint-Andre, P.</span> and <span class="refAuthor">M. Blanchet</span>, <span class="refTitle">"PRECIS Framework: Preparation, Enforcement, and Comparison of Internationalized Strings in Application Protocols"</span>, <span class="seriesInfo">RFC 7564</span>, <span class="seriesInfo">DOI 10.17487/RFC7564</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7564">https://www.rfc-editor.org/rfc/rfc7564</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8785">[RFC8785]</dt>
+      <dd>
+<span class="refAuthor">Rundgren, A.</span>, <span class="refAuthor">Jordan, B.</span>, and <span class="refAuthor">S. Erdtman</span>, <span class="refTitle">"JSON Canonicalization Scheme (JCS)"</span>, <span class="seriesInfo">RFC 8785</span>, <span class="seriesInfo">DOI 10.17487/RFC8785</span>, <time datetime="2020-06" class="refDate">June 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8785">https://www.rfc-editor.org/rfc/rfc8785</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
