@@ -59,27 +59,31 @@ Current direction:
 - it is not a bargaining channel, policy-relaxation mechanism, or homeowner-
   prompt path
 
-Still open:
+Resolved direction:
 
-- what exact success response shape should be used when declaration succeeds
-  and no comparison outcome is returned
+- when declaration succeeds and the service does not return a comparison
+  outcome, the successful response should use `204 No Content`
+- when the service does return a comparison outcome, the successful response
+  should use `200 OK` with a Comparison Outcome Object
 
-That is now one of the remaining protocol-tightening questions.
+Reasoning:
+
+- declaration success does not need a second baseline result object when no
+  additional interoperable payload is required
+- `204 No Content` keeps the declaration path narrow and makes it harder for
+  declaration success to accrete hidden negotiation semantics
+- a returned Comparison Outcome Object remains explicitly diagnostic rather
+  than a consent or bargaining surface
 
 ### Acknowledgment Response Direction
 
 Current direction:
 
-- acknowledgment success may carry resulting association state and renewed
-  freshness data
+- acknowledgment success should return a small explicit Acknowledgment Result
+  Object carrying resulting association state and renewed freshness data
 - acknowledgment remains evidentiary only
 - richer compatibility or compliance semantics remain out of scope for the
   baseline acknowledgment
-
-Still open:
-
-- whether the draft should define a small explicit acknowledgment-result object
-  rather than leaving the success response semi-structured
 
 ### What To Avoid
 
@@ -95,6 +99,8 @@ Still open:
 The baseline response-shape story should stay narrow:
 
 - registration returns canonical participant identity
-- declaration may optionally return a diagnostic comparison outcome
-- acknowledgment may return association-state and freshness information
+- declaration returns `204 No Content` unless it optionally returns a
+  diagnostic comparison outcome
+- acknowledgment returns a small explicit result object carrying
+  association-state and freshness information
 - none of these operations should become a hidden negotiation surface

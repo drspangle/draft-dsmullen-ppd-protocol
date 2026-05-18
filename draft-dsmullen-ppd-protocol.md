@@ -407,9 +407,11 @@ The following fields MAY be included when the deployment profile permits them:
 * `mac_address`
 * `ip_address`
 
-A successful response SHOULD return the canonical `device_id` and any service
-metadata the participant needs for later operations, such as the participant-
-facing service URI.
+A successful response MUST be a Registration Result Object.
+Registration success returns the canonical participant identity established or
+confirmed by the service.
+It MUST NOT repeat metadata-confirmation fields such as the participant-facing
+service URI, supported feature flags, or security profile.
 
 ## Declaration
 
@@ -431,9 +433,11 @@ dimensions defined in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as data type,
 purpose, action, source, and destination.
 The taxonomy document defines the meaning and composition of those dimensions.
 
-A successful response MAY be a Comparison Outcome Object when the service
-chooses to expose the result of comparing the declaration against household
-policy or effective-policy constraints at this boundary.
+A successful declaration response without comparison detail SHOULD use
+`204 No Content`.
+When the service chooses to expose the result of comparing the declaration
+against household policy or effective-policy constraints at this boundary, a
+successful response MUST be `200 OK` with a Comparison Outcome Object.
 Services are not required to compute or return such an outcome synchronously.
 This document does not define a participant-controlled request flag for
 comparison outcomes, and this declaration path MUST NOT be treated as a
@@ -486,13 +490,9 @@ policy rule.
 If deployments need richer participant-side compatibility or status reporting,
 that behavior MUST be defined separately from the baseline acknowledgment.
 
-A successful acknowledgment response SHOULD include:
-
-* the resulting association state, where `association_status` if present SHOULD
-  be one of `not_associated`, `associated`, `needs_reassociation`,
-  `stale_association`, or `broken`; and
-* the next `renew_by` or `renewal_interval` value to be used for maintaining
-  current association.
+A successful acknowledgment response MUST be an Acknowledgment Result Object.
+It returns the resulting association state and the next freshness value to be
+used for maintaining current association.
 
 An acknowledgment that refers to a non-current or mismatched policy instance
 MUST be rejected.
@@ -589,6 +589,16 @@ It contains:
   it; and
 * `ip_address` (optional, text):
   participant-reported network address when the deployment profile permits it.
+
+## Registration Result Object
+
+The registration result object confirms the canonical participant identity
+bound by registration.
+
+It contains:
+
+* `device_id` (required, text):
+  canonical participant identifier established or confirmed by the service.
 
 ## Device Declaration Object
 
@@ -813,6 +823,26 @@ This object is evidentiary only.
 It is a receipt for a specific policy instance and MUST NOT be interpreted as a
 claim of compatibility or compliance.
 
+## Acknowledgment Result Object
+
+The acknowledgment result object confirms the lifecycle state after the service
+records a protected acknowledgment.
+
+It contains:
+
+* `association_status` (required, text):
+  resulting association state, currently one of `not_associated`,
+  `associated`, `needs_reassociation`, `stale_association`, or `broken`;
+* `renew_by` (optional, RFC 3339 date-time string):
+  absolute deadline by which current association must be renewed if this field
+  is used; and
+* `renewal_interval` (optional, positive integer seconds):
+  bounded interval after response generation within which current association
+  must be renewed if this field is used.
+
+An Acknowledgment Result Object MUST contain exactly one of `renew_by` or
+`renewal_interval`.
+
 ### Example Effective Policy and Acknowledgment
 
 An Effective Policy Object example:
@@ -865,6 +895,15 @@ The matching Policy Acknowledgment Object example is:
 }
 ~~~
 
+An Acknowledgment Result Object example is:
+
+~~~ json
+{
+  "association_status": "associated",
+  "renewal_interval": 900
+}
+~~~
+
 ## Error Object
 
 Error responses SHOULD use `application/problem+json` and a structured error
@@ -907,7 +946,9 @@ relative references:
 The baseline protocol uses conventional HTTP status codes.
 At minimum, participants need to handle:
 
-* `200 OK` for successful retrieval or update;
+* `200 OK` for successful retrieval or update with a response body;
+* `204 No Content` for successful declaration acceptance when no diagnostic
+  response body is returned;
 * `400 Bad Request` for invalid payloads or missing required fields;
 * `401 Unauthorized` for failed authentication;
 * `403 Forbidden` for authenticated participants that are not authorized for

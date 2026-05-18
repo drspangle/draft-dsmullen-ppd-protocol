@@ -167,3 +167,21 @@ It is not part of the rendered Internet-Draft.
   response-shape cleanup, including the decision that registration success
   should return only a canonical `device_id` and the remaining declaration and
   acknowledgment success-response questions.
+
+## 2026-05-18
+
+- Tightened the protocol draft's successful response bodies so the draft is no
+  longer materially more precise on request objects than on response objects.
+- Changed registration success to require an explicit Registration Result
+  Object carrying only the canonical `device_id`, removing the earlier wording
+  that allowed registration success to repeat metadata-confirmation fields.
+- Changed declaration success so the baseline no-payload case uses
+  `204 No Content`, while declaration responses that expose comparison results
+  use `200 OK` with a Comparison Outcome Object.
+- Changed acknowledgment success to require an explicit Acknowledgment Result
+  Object carrying resulting association state plus exactly one freshness field
+  (`renew_by` or `renewal_interval`).
+- Added normative object definitions for Registration Result Object and
+  Acknowledgment Result Object, plus a concrete acknowledgment-result example.
+- Updated the response-shapes direction note so its resolved declaration and
+  acknowledgment decisions match the normative draft text.
