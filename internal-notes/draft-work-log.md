@@ -206,3 +206,13 @@ It is not part of the rendered Internet-Draft.
   acknowledgment of that same instance; if the returned policy instance differs
   or the service returns `reassociation-required`, renewal escalates to
   reassociation.
+
+## 2026-05-19
+
+- Added `internal-notes/taxonomy-coordination-followups.md` to record the
+  current protocol-side follow-ups implied by the evolving taxonomy model,
+  especially around qualifiers, examples, and comparison framing.
+- Recorded the current protocol-side coordination assessment that the draft's
+  message shape is still viable, but the current `Constraints Object`,
+  `retention`, `locality`, and example values will likely need coordinated
+  revision once the taxonomy model settles.

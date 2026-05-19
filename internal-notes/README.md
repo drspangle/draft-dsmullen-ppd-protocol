@@ -59,6 +59,8 @@ Do not put protocol semantics here if they belong in the draft itself.
 - `operation-response-shapes-direction.md`: working direction for defining the
   remaining successful response bodies, including the minimal Registration
   Result Object and the open declaration/acknowledgment response questions
+- `taxonomy-coordination-followups.md`: protocol-side follow-ups that are
+  likely once the taxonomy draft settles the next round of semantic work
 - `trusted-intermediary-examples.md`: concrete examples and criticism-response
   framing for what can count as a trusted intermediary for extremely
   constrained devices
