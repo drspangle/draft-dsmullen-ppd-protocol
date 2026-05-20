@@ -2309,7 +2309,7 @@ At minimum it contains <code>device_id</code>, <code>declaration_id</code>, and 
 <code>statements</code> array.
 Declaration statements use the shared taxonomy dimensions defined in
 <span>[<a href="#I-D.draft-dsmullen-ppd-taxonomy" class="cite xref">I-D.draft-dsmullen-ppd-taxonomy</a>]</span>.
-The taxonomy document defines the meaning of those roles, the qualifier
+The taxonomy document defines the meaning of those fields, the qualifier
 families used with them, and the core semantic floor that keeps comparison
 computable across richer vocabularies; this protocol document defines only how
 such statements are carried.
@@ -2437,20 +2437,23 @@ brief human-readable explanation suitable for diagnostics or operator review.<a 
   },
   "statements": [
     {
-      "statement_id": "video-motion-local",
-      "data_type": "ppd:videoFrame",
-      "purpose": "ppd:motionDetection",
-      "action": "ppd:collection",
-      "source": "ppd:cameraSensor",
-      "destination": "ppd:localProcessing"
+      "statement_id": "media-security-local-use",
+      "data_type": "ppd:mediaData",
+      "purpose": "ppd:security",
+      "action": "ppd:use",
+      "source": "ppd:participantObserved",
+      "destination": "ppd:householdContext",
+      "constraints": {
+        "processing_boundary": "ppd:onDeviceOnly"
+      }
     },
     {
-      "statement_id": "temperature-product-improvement",
-      "data_type": "ppd:temperatureReading",
-      "purpose": "ppd:productImprovement",
+      "statement_id": "sensor-improvement-transfer",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:analyticsAndImprovement",
       "action": "ppd:transfer",
-      "source": "ppd:sensor",
-      "destination": "ppd:vendorCloud",
+      "source": "ppd:participantObserved",
+      "destination": "ppd:vendorContext",
       "constraints": {
         "retention": "ppd:indefinite"
       }
@@ -2600,10 +2603,15 @@ processing-placement qualifier for the described or allowed or denied
 handling.<a href="#section-7.12-3.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-7.12-4">Future specifications or deployment profiles <span class="bcp14">MAY</span> define additional structured
+<p id="section-7.12-4">The companion taxonomy also defines a <code>jurisdiction</code> qualifier family shell.
+This revision of the protocol does not yet standardize a baseline wire member
+for that family, because interoperable participant-facing use depends on a
+later taxonomy revision or deployment profile that defines the shared scoped
+jurisdiction vocabulary and wire shape.<a href="#section-7.12-4" class="pilcrow">¶</a></p>
+<p id="section-7.12-5">Future specifications or deployment profiles <span class="bcp14">MAY</span> define additional structured
 constraint members.
 A Constraints Object <span class="bcp14">MUST NOT</span> be treated as an unstructured free-form text
-field.<a href="#section-7.12-4" class="pilcrow">¶</a></p>
+field.<a href="#section-7.12-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="policy-acknowledgment-object">
@@ -2684,11 +2692,11 @@ must be renewed if this field is used.<a href="#section-7.14-3.3.1" class="pilcr
   "rules": [
     {
       "rule_id": "r1",
-      "data_type": "ppd:videoFrame",
-      "purpose": "ppd:motionDetection",
+      "data_type": "ppd:mediaData",
+      "purpose": "ppd:security",
       "action": "ppd:use",
-      "source": "ppd:cameraSensor",
-      "destination": "ppd:localProcessing",
+      "source": "ppd:participantObserved",
+      "destination": "ppd:householdContext",
       "effect": "allow",
       "constraints": {
         "processing_boundary": "ppd:onDeviceOnly"
