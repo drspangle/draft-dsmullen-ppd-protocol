@@ -47,8 +47,8 @@ behavior needed for interoperable policy signaling.
 {{?I-D.draft-dsmullen-ppd-architecture}} defines the architectural roles,
 trust boundaries, and lifecycle meaning for Privacy Preference Declarations
 (PPDs) in home-network environments.
-{{?I-D.draft-dsmullen-ppd-taxonomy}} defines the vocabulary used to express
-privacy rules and participant declarations.
+{{?I-D.draft-dsmullen-ppd-taxonomy}} defines the shared semantic floor used to
+express privacy rules and participant declarations.
 This document specifies the participant-facing protocol behavior that sits
 between those two companion documents.
 The broader relationship between PPD and earlier work such as DNT, P3P, MUD,
@@ -537,8 +537,13 @@ A compact term identifier is a text string whose meaning is determined by:
 The term identifier itself is the primary semantic hook.
 Taxonomy release metadata remains secondary validation context.
 Deployments MAY use company-specific or other non-core taxonomies when their
-terms map to the shared core primitives and are declared through the applicable
-taxonomy context.
+terms are declared through the applicable taxonomy context and remain reducible
+to the shared core semantic model defined by the companion taxonomy work.
+For roles such as `data_type`, `purpose`, `source`, `destination`,
+`processing_boundary`, and scoped `jurisdiction`, that reduction can rely on
+equivalence or broader/narrower placement as defined by the taxonomy.
+For the flat `action` family, the reduction needs to preserve exact action
+meaning.
 
 For baseline interoperability, a compact term identifier MUST use the form
 `prefix:term`.
@@ -662,8 +667,10 @@ At minimum it contains `device_id`, `declaration_id`, and a non-empty
 `statements` array.
 Declaration statements use the shared taxonomy dimensions defined in
 {{?I-D.draft-dsmullen-ppd-taxonomy}}.
-The taxonomy document defines the meaning and composition of those dimensions;
-this protocol document defines only how such statements are carried.
+The taxonomy document defines the meaning of those roles, the qualifier
+families used with them, and the core semantic floor that keeps comparison
+computable across richer vocabularies; this protocol document defines only how
+such statements are carried.
 The baseline declaration is intentionally minimal.
 Registration carries participant identity, declarations carry descriptive
 participant assertions, and Effective Policy and Acknowledgment Objects carry
@@ -718,6 +725,8 @@ It contains:
 The comparison outcome object carries an optional coarse result for
 declaration-to-policy comparison on the declaration path.
 It is diagnostic and descriptive.
+It reports a coarse result of comparing participant-side atomic declaration
+statements against household-side atomic policy rules.
 It does not change the meaning of the Effective Policy Object and it is not
 part of acknowledgment semantics.
 It MUST NOT be treated as a request for policy relaxation, an invitation to
@@ -753,14 +762,14 @@ It contains:
       "destination": "ppd:localProcessing"
     },
     {
-      "statement_id": "event-clip-remote-viewing",
-      "data_type": "ppd:eventClip",
-      "purpose": "ppd:remoteViewing",
+      "statement_id": "temperature-product-improvement",
+      "data_type": "ppd:temperatureReading",
+      "purpose": "ppd:productImprovement",
       "action": "ppd:transfer",
-      "source": "ppd:cameraSensor",
+      "source": "ppd:sensor",
       "destination": "ppd:vendorCloud",
       "constraints": {
-        "retention": "ppd:shortLived"
+        "retention": "ppd:indefinite"
       }
     }
   ]
@@ -842,17 +851,19 @@ Such contradictions should be resolved before the effective policy is returned.
 
 ## Constraints Object
 
-The Constraints Object preserves a structured extension point for qualifiers
-without requiring a large qualifier language in the baseline draft.
+The Constraints Object preserves a structured extension point for dataflow
+qualifiers without requiring a large qualifier language in the baseline draft.
 It is shared by declaration statements and policy rules.
 
 The initial standardized members are:
 
 * `retention` (optional, compact term identifier):
-  retention-class qualifier for the described or allowed or denied handling;
+  baseline retention qualifier for the described or allowed or denied
+  handling. The baseline compact form is term-valued; future specifications
+  or deployment profiles MAY define more structured bounded-retention forms;
   and
-* `locality` (optional, compact term identifier):
-  locality or trust-boundary qualifier for the described or allowed or denied
+* `processing_boundary` (optional, compact term identifier):
+  processing-placement qualifier for the described or allowed or denied
   handling.
 
 Future specifications or deployment profiles MAY define additional structured
@@ -921,22 +932,12 @@ An Effective Policy Object example:
       "rule_id": "r1",
       "data_type": "ppd:videoFrame",
       "purpose": "ppd:motionDetection",
-      "action": "ppd:collection",
+      "action": "ppd:use",
       "source": "ppd:cameraSensor",
       "destination": "ppd:localProcessing",
-      "effect": "allow"
-    },
-    {
-      "rule_id": "r2",
-      "data_type": "ppd:eventClip",
-      "purpose": "ppd:remoteViewing",
-      "action": "ppd:transfer",
-      "source": "ppd:cameraSensor",
-      "destination": "ppd:vendorCloud",
       "effect": "allow",
       "constraints": {
-        "retention": "ppd:shortLived",
-        "locality": "ppd:householdApprovedRemoteService"
+        "processing_boundary": "ppd:onDeviceOnly"
       }
     }
   ]
