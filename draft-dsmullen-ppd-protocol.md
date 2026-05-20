@@ -667,7 +667,7 @@ At minimum it contains `device_id`, `declaration_id`, and a non-empty
 `statements` array.
 Declaration statements use the shared taxonomy dimensions defined in
 {{?I-D.draft-dsmullen-ppd-taxonomy}}.
-The taxonomy document defines the meaning of those roles, the qualifier
+The taxonomy document defines the meaning of those fields, the qualifier
 families used with them, and the core semantic floor that keeps comparison
 computable across richer vocabularies; this protocol document defines only how
 such statements are carried.
@@ -758,20 +758,23 @@ It contains:
   },
   "statements": [
     {
-      "statement_id": "video-motion-local",
-      "data_type": "ppd:videoFrame",
-      "purpose": "ppd:motionDetection",
-      "action": "ppd:collection",
-      "source": "ppd:cameraSensor",
-      "destination": "ppd:localProcessing"
+      "statement_id": "media-security-local-use",
+      "data_type": "ppd:mediaData",
+      "purpose": "ppd:security",
+      "action": "ppd:use",
+      "source": "ppd:participantObserved",
+      "destination": "ppd:householdContext",
+      "constraints": {
+        "processing_boundary": "ppd:onDeviceOnly"
+      }
     },
     {
-      "statement_id": "temperature-product-improvement",
-      "data_type": "ppd:temperatureReading",
-      "purpose": "ppd:productImprovement",
+      "statement_id": "sensor-improvement-transfer",
+      "data_type": "ppd:sensorData",
+      "purpose": "ppd:analyticsAndImprovement",
       "action": "ppd:transfer",
-      "source": "ppd:sensor",
-      "destination": "ppd:vendorCloud",
+      "source": "ppd:participantObserved",
+      "destination": "ppd:vendorContext",
       "constraints": {
         "retention": "ppd:indefinite"
       }
@@ -936,11 +939,11 @@ An Effective Policy Object example:
   "rules": [
     {
       "rule_id": "r1",
-      "data_type": "ppd:videoFrame",
-      "purpose": "ppd:motionDetection",
+      "data_type": "ppd:mediaData",
+      "purpose": "ppd:security",
       "action": "ppd:use",
-      "source": "ppd:cameraSensor",
-      "destination": "ppd:localProcessing",
+      "source": "ppd:participantObserved",
+      "destination": "ppd:householdContext",
       "effect": "allow",
       "constraints": {
         "processing_boundary": "ppd:onDeviceOnly"
