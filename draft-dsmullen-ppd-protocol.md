@@ -853,7 +853,9 @@ Such contradictions should be resolved before the effective policy is returned.
 
 The Constraints Object preserves a structured extension point for dataflow
 qualifiers without requiring a large qualifier language in the baseline draft.
-It is shared by declaration statements and policy rules.
+It is shared by declaration statements and policy rules. The wire container is
+named `constraints`, but the companion taxonomy work defines its members as
+qualifiers on atomic dataflows.
 
 The initial standardized members are:
 
