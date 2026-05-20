@@ -44,12 +44,19 @@ jobs:
       with:
         token: ${{ github.token }}
 
-    - name: "Upload to Datatracker"
+    - name: "Upload to Datatracker (workflow dispatch)"
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.email != '' }}
       uses: martinthomson/i-d-template@v1
       with:
         make: upload
       env:
         UPLOAD_EMAIL: ${{ inputs.email }}
+
+    - name: "Upload to Datatracker (tag push or fallback email resolution)"
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.email == '' }}
+      uses: martinthomson/i-d-template@v1
+      with:
+        make: upload
 
     - name: "Archive Submitted Drafts"
       uses: actions/upload-artifact@v4
