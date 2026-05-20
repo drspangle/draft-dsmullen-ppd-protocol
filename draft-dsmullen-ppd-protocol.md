@@ -875,6 +875,12 @@ The initial standardized members are:
   processing-placement qualifier for the described or allowed or denied
   handling.
 
+The companion taxonomy also defines a `jurisdiction` qualifier family shell.
+This revision of the protocol does not yet standardize a baseline wire member
+for that family, because interoperable participant-facing use depends on a
+later taxonomy revision or deployment profile that defines the shared scoped
+jurisdiction vocabulary and wire shape.
+
 Future specifications or deployment profiles MAY define additional structured
 constraint members.
 A Constraints Object MUST NOT be treated as an unstructured free-form text
