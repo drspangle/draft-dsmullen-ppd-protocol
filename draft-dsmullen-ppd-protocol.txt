@@ -5,7 +5,7 @@
 Network Working Group                                         D. Smullen
 Internet-Draft                                                B. Scriber
 Intended status: Informational                                 CableLabs
-Expires: 19 November 2026                                    18 May 2026
+Expires: 21 November 2026                                    20 May 2026
 
 
          Privacy Preference Declaration Protocol Specification
@@ -52,7 +52,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 19 November 2026.
+   This Internet-Draft will expire on 21 November 2026.
 
 Copyright Notice
 
@@ -128,12 +128,12 @@ Table of Contents
    [I-D.draft-dsmullen-ppd-architecture] defines the architectural
    roles, trust boundaries, and lifecycle meaning for Privacy Preference
    Declarations (PPDs) in home-network environments.
-   [I-D.draft-dsmullen-ppd-taxonomy] defines the vocabulary used to
-   express privacy rules and participant declarations.  This document
-   specifies the participant-facing protocol behavior that sits between
-   those two companion documents.  The broader relationship between PPD
-   and earlier work such as DNT, P3P, MUD, and privacy-vocabulary or
-   policy-expression efforts is discussed in
+   [I-D.draft-dsmullen-ppd-taxonomy] defines the shared semantic floor
+   used to express privacy rules and participant declarations.  This
+   document specifies the participant-facing protocol behavior that sits
+   between those two companion documents.  The broader relationship
+   between PPD and earlier work such as DNT, P3P, MUD, and privacy-
+   vocabulary or policy-expression efforts is discussed in
    [I-D.draft-dsmullen-ppd-architecture].  This document does not
    restate that comparison except where needed to explain protocol
    behavior.
@@ -691,8 +691,13 @@ Table of Contents
    The term identifier itself is the primary semantic hook.  Taxonomy
    release metadata remains secondary validation context.  Deployments
    MAY use company-specific or other non-core taxonomies when their
-   terms map to the shared core primitives and are declared through the
-   applicable taxonomy context.
+   terms are declared through the applicable taxonomy context and remain
+   reducible to the shared core semantic model defined by the companion
+   taxonomy work.  For roles such as data_type, purpose, source,
+   destination, processing_boundary, and scoped jurisdiction, that
+   reduction can rely on equivalence or broader/narrower placement as
+   defined by the taxonomy.  For the flat action family, the reduction
+   needs to preserve exact action meaning.
 
    For baseline interoperability, a compact term identifier MUST use the
    form prefix:term.  The prefix identifies either a reserved core
@@ -822,12 +827,14 @@ Table of Contents
    declaration_id, and a non-empty statements array.  Declaration
    statements use the shared taxonomy dimensions defined in
    [I-D.draft-dsmullen-ppd-taxonomy].  The taxonomy document defines the
-   meaning and composition of those dimensions; this protocol document
-   defines only how such statements are carried.  The baseline
-   declaration is intentionally minimal.  Registration carries
-   participant identity, declarations carry descriptive participant
-   assertions, and Effective Policy and Acknowledgment Objects carry the
-   lifecycle-critical policy binding and freshness semantics.
+   meaning of those roles, the qualifier families used with them, and
+   the core semantic floor that keeps comparison computable across
+   richer vocabularies; this protocol document defines only how such
+   statements are carried.  The baseline declaration is intentionally
+   minimal.  Registration carries participant identity, declarations
+   carry descriptive participant assertions, and Effective Policy and
+   Acknowledgment Objects carry the lifecycle-critical policy binding
+   and freshness semantics.
 
    The declaration is descriptive only.  It MUST NOT include normative
    policy verdicts such as allow or deny.
@@ -885,11 +892,13 @@ Table of Contents
 
    The comparison outcome object carries an optional coarse result for
    declaration-to-policy comparison on the declaration path.  It is
-   diagnostic and descriptive.  It does not change the meaning of the
-   Effective Policy Object and it is not part of acknowledgment
-   semantics.  It MUST NOT be treated as a request for policy
-   relaxation, an invitation to begin a participant-driven bargaining
-   loop, or a trigger for baseline homeowner consent prompting.
+   diagnostic and descriptive.  It reports a coarse result of comparing
+   participant-side atomic declaration statements against household-side
+   atomic policy rules.  It does not change the meaning of the Effective
+   Policy Object and it is not part of acknowledgment semantics.  It
+   MUST NOT be treated as a request for policy relaxation, an invitation
+   to begin a participant-driven bargaining loop, or a trigger for
+   baseline homeowner consent prompting.
 
    It contains:
 
@@ -921,14 +930,14 @@ Table of Contents
          "destination": "ppd:localProcessing"
        },
        {
-         "statement_id": "event-clip-remote-viewing",
-         "data_type": "ppd:eventClip",
-         "purpose": "ppd:remoteViewing",
+         "statement_id": "temperature-product-improvement",
+         "data_type": "ppd:temperatureReading",
+         "purpose": "ppd:productImprovement",
          "action": "ppd:transfer",
-         "source": "ppd:cameraSensor",
+         "source": "ppd:sensor",
          "destination": "ppd:vendorCloud",
          "constraints": {
-           "retention": "ppd:shortLived"
+           "retention": "ppd:indefinite"
          }
        }
      ]
@@ -1024,18 +1033,21 @@ Table of Contents
 7.12.  Constraints Object
 
    The Constraints Object preserves a structured extension point for
-   qualifiers without requiring a large qualifier language in the
-   baseline draft.  It is shared by declaration statements and policy
-   rules.
+   dataflow qualifiers without requiring a large qualifier language in
+   the baseline draft.  It is shared by declaration statements and
+   policy rules.
 
    The initial standardized members are:
 
-   *  retention (optional, compact term identifier): retention-class
-      qualifier for the described or allowed or denied handling; and
+   *  retention (optional, compact term identifier): baseline retention
+      qualifier for the described or allowed or denied handling.  The
+      baseline compact form is term-valued; future specifications or
+      deployment profiles MAY define more structured bounded-retention
+      forms; and
 
-   *  locality (optional, compact term identifier): locality or trust-
-      boundary qualifier for the described or allowed or denied
-      handling.
+   *  processing_boundary (optional, compact term identifier):
+      processing-placement qualifier for the described or allowed or
+      denied handling.
 
    Future specifications or deployment profiles MAY define additional
    structured constraint members.  A Constraints Object MUST NOT be
@@ -1105,22 +1117,12 @@ Table of Contents
          "rule_id": "r1",
          "data_type": "ppd:videoFrame",
          "purpose": "ppd:motionDetection",
-         "action": "ppd:collection",
+         "action": "ppd:use",
          "source": "ppd:cameraSensor",
          "destination": "ppd:localProcessing",
-         "effect": "allow"
-       },
-       {
-         "rule_id": "r2",
-         "data_type": "ppd:eventClip",
-         "purpose": "ppd:remoteViewing",
-         "action": "ppd:transfer",
-         "source": "ppd:cameraSensor",
-         "destination": "ppd:vendorCloud",
          "effect": "allow",
          "constraints": {
-           "retention": "ppd:shortLived",
-           "locality": "ppd:householdApprovedRemoteService"
+           "processing_boundary": "ppd:onDeviceOnly"
          }
        }
      ]
@@ -1344,16 +1346,16 @@ Table of Contents
    [I-D.draft-dsmullen-ppd-architecture]
               Smullen, D. and B. Scriber, "Privacy Preference
               Declaration for Home Networks", Work in Progress,
-              Internet-Draft, draft-dsmullen-ppd-architecture-05, 7 May
+              Internet-Draft, draft-dsmullen-ppd-architecture-06, 18 May
               2026, <https://datatracker.ietf.org/doc/html/draft-
-              dsmullen-ppd-architecture-05>.
+              dsmullen-ppd-architecture-06>.
 
    [I-D.draft-dsmullen-ppd-taxonomy]
               Smullen, D. and B. Scriber, "Privacy Preference
               Declaration Taxonomy", Work in Progress, Internet-Draft,
-              draft-dsmullen-ppd-taxonomy-02, 7 December 2025,
+              draft-dsmullen-ppd-taxonomy-03, 18 May 2026,
               <https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-
-              taxonomy-02>.
+              taxonomy-03>.
 
    [RFC3339]  Klyne, G. and C. Newman, "Date and Time on the Internet:
               Timestamps", RFC 3339, DOI 10.17487/RFC3339, July 2002,

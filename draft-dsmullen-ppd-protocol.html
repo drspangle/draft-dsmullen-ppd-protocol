@@ -1061,7 +1061,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Smullen &amp; Scriber</td>
-<td class="center">Expires 19 November 2026</td>
+<td class="center">Expires 21 November 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1074,12 +1074,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-dsmullen-ppd-protocol-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-05-18" class="published">18 May 2026</time>
+<time datetime="2026-05-20" class="published">20 May 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-11-19">19 November 2026</time></dd>
+<dd class="expires"><time datetime="2026-11-21">21 November 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1136,7 +1136,7 @@ behavior needed for interoperable policy signaling.<a href="#section-abstract-1"
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 19 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 21 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1357,8 +1357,8 @@ behavior needed for interoperable policy signaling.<a href="#section-abstract-1"
 <p id="section-1-1"><span>[<a href="#I-D.draft-dsmullen-ppd-architecture" class="cite xref">I-D.draft-dsmullen-ppd-architecture</a>]</span> defines the architectural roles,
 trust boundaries, and lifecycle meaning for Privacy Preference Declarations
 (PPDs) in home-network environments.
-<span>[<a href="#I-D.draft-dsmullen-ppd-taxonomy" class="cite xref">I-D.draft-dsmullen-ppd-taxonomy</a>]</span> defines the vocabulary used to express
-privacy rules and participant declarations.
+<span>[<a href="#I-D.draft-dsmullen-ppd-taxonomy" class="cite xref">I-D.draft-dsmullen-ppd-taxonomy</a>]</span> defines the shared semantic floor used to
+express privacy rules and participant declarations.
 This document specifies the participant-facing protocol behavior that sits
 between those two companion documents.
 The broader relationship between PPD and earlier work such as DNT, P3P, MUD,
@@ -2119,8 +2119,13 @@ A compact term identifier is a text string whose meaning is determined by:<a hre
 <p id="section-7.1-3">The term identifier itself is the primary semantic hook.
 Taxonomy release metadata remains secondary validation context.
 Deployments <span class="bcp14">MAY</span> use company-specific or other non-core taxonomies when their
-terms map to the shared core primitives and are declared through the applicable
-taxonomy context.<a href="#section-7.1-3" class="pilcrow">¶</a></p>
+terms are declared through the applicable taxonomy context and remain reducible
+to the shared core semantic model defined by the companion taxonomy work.
+For roles such as <code>data_type</code>, <code>purpose</code>, <code>source</code>, <code>destination</code>,
+<code>processing_boundary</code>, and scoped <code>jurisdiction</code>, that reduction can rely on
+equivalence or broader/narrower placement as defined by the taxonomy.
+For the flat <code>action</code> family, the reduction needs to preserve exact action
+meaning.<a href="#section-7.1-3" class="pilcrow">¶</a></p>
 <p id="section-7.1-4">For baseline interoperability, a compact term identifier <span class="bcp14">MUST</span> use the form
 <code>prefix:term</code>.
 The prefix identifies either a reserved core vocabulary or an explicitly
@@ -2304,8 +2309,10 @@ At minimum it contains <code>device_id</code>, <code>declaration_id</code>, and 
 <code>statements</code> array.
 Declaration statements use the shared taxonomy dimensions defined in
 <span>[<a href="#I-D.draft-dsmullen-ppd-taxonomy" class="cite xref">I-D.draft-dsmullen-ppd-taxonomy</a>]</span>.
-The taxonomy document defines the meaning and composition of those dimensions;
-this protocol document defines only how such statements are carried.
+The taxonomy document defines the meaning of those roles, the qualifier
+families used with them, and the core semantic floor that keeps comparison
+computable across richer vocabularies; this protocol document defines only how
+such statements are carried.
 The baseline declaration is intentionally minimal.
 Registration carries participant identity, declarations carry descriptive
 participant assertions, and Effective Policy and Acknowledgment Objects carry
@@ -2388,6 +2395,8 @@ structured qualifiers that refine the statement.<a href="#section-7.8-3.7.1" cla
 <p id="section-7.9-1">The comparison outcome object carries an optional coarse result for
 declaration-to-policy comparison on the declaration path.
 It is diagnostic and descriptive.
+It reports a coarse result of comparing participant-side atomic declaration
+statements against household-side atomic policy rules.
 It does not change the meaning of the Effective Policy Object and it is not
 part of acknowledgment semantics.
 It <span class="bcp14">MUST NOT</span> be treated as a request for policy relaxation, an invitation to
@@ -2432,14 +2441,14 @@ brief human-readable explanation suitable for diagnostics or operator review.<a 
       "destination": "ppd:localProcessing"
     },
     {
-      "statement_id": "event-clip-remote-viewing",
-      "data_type": "ppd:eventClip",
-      "purpose": "ppd:remoteViewing",
+      "statement_id": "temperature-product-improvement",
+      "data_type": "ppd:temperatureReading",
+      "purpose": "ppd:productImprovement",
       "action": "ppd:transfer",
-      "source": "ppd:cameraSensor",
+      "source": "ppd:sensor",
       "destination": "ppd:vendorCloud",
       "constraints": {
-        "retention": "ppd:shortLived"
+        "retention": "ppd:indefinite"
       }
     }
   ]
@@ -2567,19 +2576,21 @@ Such contradictions should be resolved before the effective policy is returned.<
         <h3 id="name-constraints-object">
 <a href="#section-7.12" class="section-number selfRef">7.12. </a><a href="#name-constraints-object" class="section-name selfRef">Constraints Object</a>
         </h3>
-<p id="section-7.12-1">The Constraints Object preserves a structured extension point for qualifiers
-without requiring a large qualifier language in the baseline draft.
+<p id="section-7.12-1">The Constraints Object preserves a structured extension point for dataflow
+qualifiers without requiring a large qualifier language in the baseline draft.
 It is shared by declaration statements and policy rules.<a href="#section-7.12-1" class="pilcrow">¶</a></p>
 <p id="section-7.12-2">The initial standardized members are:<a href="#section-7.12-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-7.12-3.1">
             <p id="section-7.12-3.1.1"><code>retention</code> (optional, compact term identifier):
-retention-class qualifier for the described or allowed or denied handling;
+baseline retention qualifier for the described or allowed or denied
+handling. The baseline compact form is term-valued; future specifications
+or deployment profiles <span class="bcp14">MAY</span> define more structured bounded-retention forms;
 and<a href="#section-7.12-3.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.12-3.2">
-            <p id="section-7.12-3.2.1"><code>locality</code> (optional, compact term identifier):
-locality or trust-boundary qualifier for the described or allowed or denied
+            <p id="section-7.12-3.2.1"><code>processing_boundary</code> (optional, compact term identifier):
+processing-placement qualifier for the described or allowed or denied
 handling.<a href="#section-7.12-3.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
@@ -2669,22 +2680,12 @@ must be renewed if this field is used.<a href="#section-7.14-3.3.1" class="pilcr
       "rule_id": "r1",
       "data_type": "ppd:videoFrame",
       "purpose": "ppd:motionDetection",
-      "action": "ppd:collection",
+      "action": "ppd:use",
       "source": "ppd:cameraSensor",
       "destination": "ppd:localProcessing",
-      "effect": "allow"
-    },
-    {
-      "rule_id": "r2",
-      "data_type": "ppd:eventClip",
-      "purpose": "ppd:remoteViewing",
-      "action": "ppd:transfer",
-      "source": "ppd:cameraSensor",
-      "destination": "ppd:vendorCloud",
       "effect": "allow",
       "constraints": {
-        "retention": "ppd:shortLived",
-        "locality": "ppd:householdApprovedRemoteService"
+        "processing_boundary": "ppd:onDeviceOnly"
       }
     }
   ]
@@ -3003,11 +3004,11 @@ considered.<a href="#section-10-1" class="pilcrow">¶</a></p>
 <dl class="references">
 <dt id="I-D.draft-dsmullen-ppd-architecture">[I-D.draft-dsmullen-ppd-architecture]</dt>
         <dd>
-<span class="refAuthor">Smullen, D.</span> and <span class="refAuthor">B. Scriber</span>, <span class="refTitle">"Privacy Preference Declaration for Home Networks"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-dsmullen-ppd-architecture-05</span>, <time datetime="2026-05-07" class="refDate">7 May 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-architecture-05">https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-architecture-05</a>&gt;</span>. </dd>
+<span class="refAuthor">Smullen, D.</span> and <span class="refAuthor">B. Scriber</span>, <span class="refTitle">"Privacy Preference Declaration for Home Networks"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-dsmullen-ppd-architecture-06</span>, <time datetime="2026-05-18" class="refDate">18 May 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-architecture-06">https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-architecture-06</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.draft-dsmullen-ppd-taxonomy">[I-D.draft-dsmullen-ppd-taxonomy]</dt>
         <dd>
-<span class="refAuthor">Smullen, D.</span> and <span class="refAuthor">B. Scriber</span>, <span class="refTitle">"Privacy Preference Declaration Taxonomy"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-dsmullen-ppd-taxonomy-02</span>, <time datetime="2025-12-07" class="refDate">7 December 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-taxonomy-02">https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-taxonomy-02</a>&gt;</span>. </dd>
+<span class="refAuthor">Smullen, D.</span> and <span class="refAuthor">B. Scriber</span>, <span class="refTitle">"Privacy Preference Declaration Taxonomy"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-dsmullen-ppd-taxonomy-03</span>, <time datetime="2026-05-18" class="refDate">18 May 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-taxonomy-03">https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-taxonomy-03</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC3339">[RFC3339]</dt>
         <dd>
