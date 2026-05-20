@@ -671,6 +671,10 @@ The taxonomy document defines the meaning of those roles, the qualifier
 families used with them, and the core semantic floor that keeps comparison
 computable across richer vocabularies; this protocol document defines only how
 such statements are carried.
+This document uses `operation` for participant-facing protocol exchanges such
+as registration, retrieval, and acknowledgment. Terms such as `handling`,
+`processing`, and `dataflow` inside declaration statements and policy rules
+have the meanings defined by the companion taxonomy specification.
 The baseline declaration is intentionally minimal.
 Registration carries participant identity, declarations carry descriptive
 participant assertions, and Effective Policy and Acknowledgment Objects carry
