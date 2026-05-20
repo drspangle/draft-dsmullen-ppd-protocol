@@ -216,3 +216,21 @@ It is not part of the rendered Internet-Draft.
   message shape is still viable, but the current `Constraints Object`,
   `retention`, `locality`, and example values will likely need coordinated
   revision once the taxonomy model settles.
+
+## 2026-05-20
+
+- Aligned the protocol draft's terminology note so `dataflow`, `action`,
+  `handling`, and `processing` now defer explicitly to the meanings defined in
+  the taxonomy draft, while `operation` remains reserved for participant-
+  facing protocol exchanges.
+- Updated the concrete declaration and effective-policy examples so they use
+  the current broader taxonomy floor terms rather than the older narrower
+  example vocabulary.
+- Clarified that `jurisdiction` exists as a taxonomy qualifier family shell,
+  but this protocol revision does not yet standardize a baseline wire member
+  for it in the `constraints` object.
+- Current near-term status: the protocol draft appears close to a defensible
+  next Datatracker revision, but before submitting again it should get one
+  more short read focused on example coherence, stale taxonomy wording, and
+  whether any remaining qualifier prose still implies the older `locality`
+  model.
