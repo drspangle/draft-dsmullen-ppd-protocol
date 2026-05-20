@@ -830,11 +830,15 @@ Table of Contents
    meaning of those roles, the qualifier families used with them, and
    the core semantic floor that keeps comparison computable across
    richer vocabularies; this protocol document defines only how such
-   statements are carried.  The baseline declaration is intentionally
-   minimal.  Registration carries participant identity, declarations
-   carry descriptive participant assertions, and Effective Policy and
-   Acknowledgment Objects carry the lifecycle-critical policy binding
-   and freshness semantics.
+   statements are carried.  This document uses operation for
+   participant-facing protocol exchanges such as registration,
+   retrieval, and acknowledgment.  Terms such as handling, processing,
+   and dataflow inside declaration statements and policy rules have the
+   meanings defined by the companion taxonomy specification.  The
+   baseline declaration is intentionally minimal.  Registration carries
+   participant identity, declarations carry descriptive participant
+   assertions, and Effective Policy and Acknowledgment Objects carry the
+   lifecycle-critical policy binding and freshness semantics.
 
    The declaration is descriptive only.  It MUST NOT include normative
    policy verdicts such as allow or deny.
@@ -1355,9 +1359,9 @@ Table of Contents
    [I-D.draft-dsmullen-ppd-taxonomy]
               Smullen, D. and B. Scriber, "Privacy Preference
               Declaration Taxonomy", Work in Progress, Internet-Draft,
-              draft-dsmullen-ppd-taxonomy-03, 18 May 2026,
+              draft-dsmullen-ppd-taxonomy-04, 20 May 2026,
               <https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-
-              taxonomy-03>.
+              taxonomy-04>.
 
    [RFC3339]  Klyne, G. and C. Newman, "Date and Time on the Internet:
               Timestamps", RFC 3339, DOI 10.17487/RFC3339, July 2002,
