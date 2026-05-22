@@ -266,3 +266,16 @@ It is not part of the rendered Internet-Draft.
   rendered read of the protocol object definitions and examples before
   deciding whether the protocol draft is ready for the next Datatracker
   revision.
+- Final pre-submission pass completed:
+  - object definitions, `Constraints Object`, and example placement were
+    tightened;
+  - explicit references to {{?I-D.draft-dsmullen-ppd-taxonomy}} were added for
+    taxonomy-owned semantics;
+  - local validation passed for the submitted `-03` revision; and
+  - the draft was approved for submission.
+- Submission checkpoint:
+  - GitHub tag `draft-dsmullen-ppd-protocol-03` was pushed to trigger the
+    Datatracker submission workflow;
+  - the companion-draft follow-up email to IOTOPS was sent after the protocol
+    review completed; and
+  - end-of-day status is clean locally and pushed to GitHub.
