@@ -1291,14 +1291,14 @@ guarantees participant behavior.<a href="#section-abstract-1" class="pilcrow">¶
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.8">
                 <p id="section-toc.1-1.7.2.8.1"><a href="#section-7.8" class="auto internal xref">7.8</a>.  <a href="#name-declaration-statement-objec" class="internal xref">Declaration Statement Object</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.8.2.1">
+                    <p id="section-toc.1-1.7.2.8.2.1.1"><a href="#section-7.8.1" class="auto internal xref">7.8.1</a>.  <a href="#name-example-device-declaration-" class="internal xref">Example Device Declaration Object</a></p>
+</li>
+                </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.9">
                 <p id="section-toc.1-1.7.2.9.1"><a href="#section-7.9" class="auto internal xref">7.9</a>.  <a href="#name-comparison-outcome-object" class="internal xref">Comparison Outcome Object</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.9.2.1">
-                    <p id="section-toc.1-1.7.2.9.2.1.1"><a href="#section-7.9.1" class="auto internal xref">7.9.1</a>.  <a href="#name-example-device-declaration-" class="internal xref">Example Device Declaration Object</a></p>
-</li>
-                </ul>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.10">
                 <p id="section-toc.1-1.7.2.10.1"><a href="#section-7.10" class="auto internal xref">7.10</a>. <a href="#name-effective-policy-object" class="internal xref">Effective Policy Object</a></p>
@@ -1396,11 +1396,6 @@ explicit:
 the protocol-side participant is a device or a service acting for a device, not
 the homeowner, household member, or operator who set or review household
 policy.<a href="#section-1-4" class="pilcrow">¶</a></p>
-<p id="section-1-5">This protocol does not define local dashboards, operator workflow, household
-policy authoring, device-behavior enforcement, or internal protocols between a
-PPD service endpoint and a distinct policy authority.
-Those functions can exist in deployments, but they are outside the baseline
-interoperable contract defined here.<a href="#section-1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="conventions-and-definitions">
@@ -1987,7 +1982,9 @@ policy derivation or later operator review.<a href="#section-6.4.1-2.1.1" class=
 <p id="section-6.4.1-3">Declarations are optional.
 A participant that does not submit a declaration can still establish
 association if it can retrieve and acknowledge the applicable policy instance.<a href="#section-6.4.1-3" class="pilcrow">¶</a></p>
-<p id="section-6.4.1-4">The request body <span class="bcp14">MUST</span> be a Device Declaration Object.<a href="#section-6.4.1-4" class="pilcrow">¶</a></p>
+<p id="section-6.4.1-4">The request body <span class="bcp14">MUST</span> be a Device Declaration Object.
+See Device Declaration Object and Declaration Statement Object below for the
+precise object shape.<a href="#section-6.4.1-4" class="pilcrow">¶</a></p>
 <p id="section-6.4.1-5">A declaration carries one or more descriptive statements that use the taxonomy
 dimensions defined in <span>[<a href="#I-D.draft-dsmullen-ppd-taxonomy" class="cite xref">I-D.draft-dsmullen-ppd-taxonomy</a>]</span>, such as data type,
 purpose, action, source, and handling context.
@@ -2030,7 +2027,9 @@ acknowledged; and<a href="#section-6.5.1-2.2.1" class="pilcrow">¶</a></p>
               <p id="section-6.5.1-2.3.1">communicate the association-freshness limit for current association.<a href="#section-6.5.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
           </ul>
-<p id="section-6.5.1-3">A successful response <span class="bcp14">MUST</span> be an Effective Policy Object.<a href="#section-6.5.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.5.1-3">A successful response <span class="bcp14">MUST</span> be an Effective Policy Object.
+See Effective Policy Object and Policy Rule Object below for the precise
+object shape.<a href="#section-6.5.1-3" class="pilcrow">¶</a></p>
 <p id="section-6.5.1-4">A successful response <span class="bcp14">SHOULD</span> include policy-instance provenance fields that let later
 inspection distinguish the household baseline from any more specific inputs,
 such as:<a href="#section-6.5.1-4" class="pilcrow">¶</a></p>
@@ -2404,51 +2403,20 @@ context in which the dataflow occurs or into which it is directed. For
 <code>collection</code>, this identifies the context into which collected data is
 brought. For <code>use</code> and <code>inference</code>, it identifies the context in which that
 dataflow occurs. For <code>transfer</code>, it identifies the recipient-side context
-into which data is transferred; and<a href="#section-7.8-3.6.1" class="pilcrow">¶</a></p>
+into which data is transferred. The semantic meaning of this field is
+defined by <span>[<a href="#I-D.draft-dsmullen-ppd-taxonomy" class="cite xref">I-D.draft-dsmullen-ppd-taxonomy</a>]</span>; and<a href="#section-7.8-3.6.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.8-3.7">
             <p id="section-7.8-3.7.1"><code>constraints</code> (optional, Constraints Object):
 structured qualifiers that refine the statement.<a href="#section-7.8-3.7.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-</section>
-</div>
-<div id="comparison-outcome-object">
-<section id="section-7.9">
-        <h3 id="name-comparison-outcome-object">
-<a href="#section-7.9" class="section-number selfRef">7.9. </a><a href="#name-comparison-outcome-object" class="section-name selfRef">Comparison Outcome Object</a>
-        </h3>
-<p id="section-7.9-1">The comparison outcome object carries an optional coarse result for
-declaration-to-policy comparison on the declaration path.
-It reports a coarse diagnostic result of comparing participant-side atomic
-declaration statements against household-side atomic policy rules.
-It does not change the meaning of the Effective Policy Object and it is not
-part of acknowledgment semantics.
-It <span class="bcp14">MUST NOT</span> be treated as a request for policy relaxation, an invitation to
-begin a participant-driven bargaining loop, or a trigger for baseline
-homeowner consent prompting.<a href="#section-7.9-1" class="pilcrow">¶</a></p>
-<p id="section-7.9-2">It contains:<a href="#section-7.9-2" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-7.9-3.1">
-            <p id="section-7.9-3.1.1"><code>declaration_id</code> (required, text):
-declaration instance to which this comparison result applies;<a href="#section-7.9-3.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-7.9-3.2">
-            <p id="section-7.9-3.2.1"><code>outcome</code> (required, text):
-one of <code>compatible</code>, <code>conditionally_satisfiable</code>, <code>decision_required</code>,
-<code>unsatisfiable</code>, or <code>indeterminate</code>; and<a href="#section-7.9-3.2.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-7.9-3.3">
-            <p id="section-7.9-3.3.1"><code>detail</code> (optional, text):
-brief human-readable explanation suitable for diagnostics or operator review.<a href="#section-7.9-3.3.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
 <div id="example-device-declaration-object">
-<section id="section-7.9.1">
+<section id="section-7.8.1">
           <h4 id="name-example-device-declaration-">
-<a href="#section-7.9.1" class="section-number selfRef">7.9.1. </a><a href="#name-example-device-declaration-" class="section-name selfRef">Example Device Declaration Object</a>
+<a href="#section-7.8.1" class="section-number selfRef">7.8.1. </a><a href="#name-example-device-declaration-" class="section-name selfRef">Example Device Declaration Object</a>
           </h4>
-<div class="lang-json sourcecode" id="section-7.9.1-1">
+<div class="lang-json sourcecode" id="section-7.8.1-1">
 <pre>
 {
   "device_id": "doorbell-7",
@@ -2485,10 +2453,42 @@ brief human-readable explanation suitable for diagnostics or operator review.<a 
     }
   ]
 }
-</pre><a href="#section-7.9.1-1" class="pilcrow">¶</a>
+</pre><a href="#section-7.8.1-1" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
+</section>
+</div>
+<div id="comparison-outcome-object">
+<section id="section-7.9">
+        <h3 id="name-comparison-outcome-object">
+<a href="#section-7.9" class="section-number selfRef">7.9. </a><a href="#name-comparison-outcome-object" class="section-name selfRef">Comparison Outcome Object</a>
+        </h3>
+<p id="section-7.9-1">The comparison outcome object carries an optional coarse result for
+declaration-to-policy comparison on the declaration path.
+It reports a coarse diagnostic result of comparing participant-side atomic
+declaration statements against household-side atomic policy rules.
+It does not change the meaning of the Effective Policy Object and it is not
+part of acknowledgment semantics.
+It <span class="bcp14">MUST NOT</span> be treated as a request for policy relaxation, an invitation to
+begin a participant-driven bargaining loop, or a trigger for baseline
+homeowner consent prompting.<a href="#section-7.9-1" class="pilcrow">¶</a></p>
+<p id="section-7.9-2">It contains:<a href="#section-7.9-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.9-3.1">
+            <p id="section-7.9-3.1.1"><code>declaration_id</code> (required, text):
+declaration instance to which this comparison result applies;<a href="#section-7.9-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.9-3.2">
+            <p id="section-7.9-3.2.1"><code>outcome</code> (required, text):
+one of <code>compatible</code>, <code>conditionally_satisfiable</code>, <code>decision_required</code>,
+<code>unsatisfiable</code>, or <code>indeterminate</code>; and<a href="#section-7.9-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-7.9-3.3">
+            <p id="section-7.9-3.3.1"><code>detail</code> (optional, text):
+brief human-readable explanation suitable for diagnostics or operator review.<a href="#section-7.9-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
 </section>
 </div>
 <div id="effective-policy-object">
@@ -2550,7 +2550,9 @@ time at which the effective policy instance was computed or materialized.<a href
 <code>renewal_interval</code>.
 These fields govern association freshness for the participant-facing lifecycle.
 They do not define abstract policy validity outside that lifecycle.
-If any rule uses a non-core compact prefix, the <code>taxonomy</code> object is <span class="bcp14">REQUIRED</span>.<a href="#section-7.10-4" class="pilcrow">¶</a></p>
+If any rule uses a non-core compact prefix, the <code>taxonomy</code> object is <span class="bcp14">REQUIRED</span>.
+A complete example appears below under Example Effective Policy and
+Acknowledgment.<a href="#section-7.10-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="policy-rule-object">
@@ -2591,7 +2593,8 @@ context in which the dataflow occurs or into which it is directed. For
 <code>collection</code>, this identifies the context into which collected data is
 brought. For <code>use</code> and <code>inference</code>, it identifies the context in which that
 dataflow occurs. For <code>transfer</code>, it identifies the recipient-side context
-into which data is transferred;<a href="#section-7.11-4.6.1" class="pilcrow">¶</a></p>
+into which data is transferred. The semantic meaning of this field is
+defined by <span>[<a href="#I-D.draft-dsmullen-ppd-taxonomy" class="cite xref">I-D.draft-dsmullen-ppd-taxonomy</a>]</span>;<a href="#section-7.11-4.6.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.11-4.7">
             <p id="section-7.11-4.7.1"><code>effect</code> (required, text):
@@ -2616,7 +2619,10 @@ Such contradictions should be resolved before the effective policy is returned.<
 qualifiers without requiring a large qualifier language in the baseline draft.
 It is shared by declaration statements and policy rules. The wire container is
 named <code>constraints</code>, but the companion taxonomy work defines its members as
-qualifiers on atomic dataflows.<a href="#section-7.12-1" class="pilcrow">¶</a></p>
+qualifiers on atomic dataflows.
+<span>[<a href="#I-D.draft-dsmullen-ppd-taxonomy" class="cite xref">I-D.draft-dsmullen-ppd-taxonomy</a>]</span> also defines the semantic meaning of
+<code>retention</code>, <code>processing_boundary</code>, and <code>jurisdiction</code>; this document defines
+only their participant-facing wire representation.<a href="#section-7.12-1" class="pilcrow">¶</a></p>
 <p id="section-7.12-2">The initial standardized members are:<a href="#section-7.12-2" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-7.12-3.1">
