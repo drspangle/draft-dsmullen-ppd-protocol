@@ -38,7 +38,10 @@ operations for endpoint metadata confirmation, participant registration,
 optional participant declaration, effective-policy retrieval, policy
 acknowledgment, renewal, and reassociation.  This document complements the PPD
 architecture and taxonomy documents by defining the message and sequencing
-behavior needed for interoperable policy signaling.
+behavior needed for interoperable policy signaling.  The household policy
+instances carried by this protocol express privacy preferences for signaling
+and comparison; they do not by themselves define an enforcement mechanism that
+guarantees participant behavior.
 
 --- middle
 
@@ -66,6 +69,15 @@ acknowledgment for that exact policy instance.
 The protocol also defines how the home-side service and the device-side actor
 keep association current over time, including renewal and reassociation
 behavior.
+
+The policy instances retrieved through this protocol express household privacy
+preferences and comparison inputs. They do not by themselves create or prove a
+separate enforcement action against participant behavior. Deployment-specific
+enforcement, gating, or control responses are outside the baseline
+participant-facing protocol defined here, because this document standardizes
+only the interoperable signaling path between the household-side endpoint and
+the participant, while enforcement depends on deployment-specific control
+surfaces and capabilities beyond that shared protocol baseline.
 
 In the formal architecture terminology reused here, the device-side actor is
 the `PPD participant`.
@@ -444,8 +456,8 @@ The request body MUST be a Device Declaration Object.
 A declaration carries one or more descriptive statements that use the taxonomy
 dimensions defined in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as data type,
 purpose, action, source, and handling context.
-In this model, handling context means the context a handling step is directed
-into or occurs within; it is not limited to transfer destinations.
+In this model, handling context means the context in which a dataflow occurs
+or into which it is directed; it is not limited to transfer destinations.
 The taxonomy document defines the meaning and composition of those dimensions.
 
 A successful declaration response without comparison detail SHOULD use
@@ -719,17 +731,17 @@ It contains:
 * `data_type` (required, compact term identifier):
   data category to which the statement applies;
 * `purpose` (required, compact term identifier):
-  purpose associated with the described handling;
+  why the dataflow occurs;
 * `action` (required, compact term identifier):
-  handling action the participant performs or may request;
+  which privacy-relevant action the participant performs or may request;
 * `source` (required, compact term identifier):
-  source context for the handled data;
+  immediate origin of the data in that dataflow;
 * `handling_context` (required, compact term identifier):
-  target handling context described by the participant. For `collection`, this
-  identifies the context into which collected data is brought. For `use` and
-  `inference`, it identifies the context in which that handling occurs. For
-  `transfer`, it identifies the recipient-side context into which data is
-  transferred; and
+  context in which the dataflow occurs or into which it is directed. For
+  `collection`, this identifies the context into which collected data is
+  brought. For `use` and `inference`, it identifies the context in which that
+  dataflow occurs. For `transfer`, it identifies the recipient-side context
+  into which data is transferred; and
 * `constraints` (optional, Constraints Object):
   structured qualifiers that refine the statement.
 
@@ -853,17 +865,17 @@ It contains:
 * `data_type` (required, compact term identifier):
   data category to which the rule applies;
 * `purpose` (required, compact term identifier):
-  purpose for which the data handling is considered;
+  why the dataflow occurs;
 * `action` (required, compact term identifier):
-  handling action covered by the rule;
+  which privacy-relevant action the rule covers;
 * `source` (required, compact term identifier):
-  source context for the handled data;
+  immediate origin of the data in that dataflow;
 * `handling_context` (required, compact term identifier):
-  target handling context covered by the rule. For `collection`, this
-  identifies the context into which collected data is brought. For `use` and
-  `inference`, it identifies the context in which that handling occurs. For
-  `transfer`, it identifies the recipient-side context into which data is
-  transferred;
+  context in which the dataflow occurs or into which it is directed. For
+  `collection`, this identifies the context into which collected data is
+  brought. For `use` and `inference`, it identifies the context in which that
+  dataflow occurs. For `transfer`, it identifies the recipient-side context
+  into which data is transferred;
 * `effect` (required, text):
   normative rule effect, currently one of `allow` or `deny`; and
 * `constraints` (optional, Constraints Object):

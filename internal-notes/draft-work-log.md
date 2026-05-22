@@ -234,3 +234,23 @@ It is not part of the rendered Internet-Draft.
   more short read focused on example coherence, stale taxonomy wording, and
   whether any remaining qualifier prose still implies the older `locality`
   model.
+
+## 2026-05-22
+
+- Replaced `destination` with `handling_context` across the protocol draft,
+  updated the declaration and policy-rule object definitions, and aligned the
+  examples to the new field name.
+- Brought the baseline `jurisdiction` qualifier into the protocol as a
+  concrete structured `constraints` member with `scope`, `countrycode`, and
+  `subdivisioncode`.
+- Tightened the introduction so the protocol explicitly frames household
+  policy instances as signaling and comparison inputs, not as a built-in
+  enforcement mechanism.
+- Aligned the protocol's field descriptions more closely to the taxonomy's
+  semantic definitions for `purpose`, `action`, `source`, and
+  `handling_context`.
+- Current near-term status: the next review should focus on whether the
+  protocol object definitions read naturally after the handling-context rename
+  and whether any remaining prose still overstates what the protocol itself is
+  responsible for versus what belongs to deployment-specific enforcement or
+  management layers.
