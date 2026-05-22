@@ -246,7 +246,7 @@ The metadata response is expected to identify at least:
 
 * the participant-facing service URI;
 * the protocol version or profile identifier;
-* the taxonomy version or versions understood by the service;
+* the taxonomy release or releases understood by the service;
 * whether participant declarations are supported;
 * whether protected acknowledgments are supported; and
 * the expected security mode or trust profile.
@@ -678,7 +678,7 @@ It contains:
 
 ## Device Declaration Object
 
-The declaration object carries participant-supplied capability or data-handling
+The declaration object carries participant-supplied descriptive dataflow
 information.
 At minimum it contains `device_id`, `declaration_id`, and a non-empty
 `statements` array.
@@ -709,12 +709,11 @@ It contains:
 * `taxonomy` (optional, Taxonomy Context Object):
   release context and any required non-core prefix declarations;
 * `statements` (required, non-empty array of Declaration Statement Objects):
-  participant-supplied descriptive cases stating which taxonomy-defined
-  combinations apply to this participant.
+  participant-supplied descriptive dataflow cases stating which taxonomy-
+  defined combinations apply to this participant.
 
 If a declaration uses any non-core compact prefix in its statements or
-constraints, the
-`taxonomy` object is REQUIRED.
+constraints, the `taxonomy` object is REQUIRED.
 
 ## Declaration Statement Object
 
@@ -749,9 +748,8 @@ It contains:
 
 The comparison outcome object carries an optional coarse result for
 declaration-to-policy comparison on the declaration path.
-It is diagnostic and descriptive.
-It reports a coarse result of comparing participant-side atomic declaration
-statements against household-side atomic policy rules.
+It reports a coarse diagnostic result of comparing participant-side atomic
+declaration statements against household-side atomic policy rules.
 It does not change the meaning of the Effective Policy Object and it is not
 part of acknowledgment semantics.
 It MUST NOT be treated as a request for policy relaxation, an invitation to
@@ -773,7 +771,7 @@ It contains:
 ~~~ json
 {
   "device_id": "doorbell-7",
-  "declaration_id": "doorbell-7-capability-v1",
+  "declaration_id": "doorbell-7-declaration-v1",
   "taxonomy": {
     "release": "ppd-core-2026-05"
   },
@@ -896,16 +894,15 @@ qualifiers on atomic dataflows.
 The initial standardized members are:
 
 * `retention` (optional, compact term identifier):
-  baseline retention qualifier for the described or allowed or denied
-  handling. The baseline compact form is term-valued; future specifications
-  or deployment profiles MAY define more structured bounded-retention forms;
-  and
+  baseline retention qualifier for the scoped dataflow. The baseline compact
+  form is term-valued; future specifications or deployment profiles MAY
+  define more structured bounded-retention forms.
 * `processing_boundary` (optional, compact term identifier):
-  processing-placement qualifier for the described or allowed or denied
-  handling; and
+  processing-placement qualifier for `use` or `inference` within the declared
+  handling context.
 * `jurisdiction` (optional, object):
-  declarative jurisdiction qualifier for the described or allowed or denied
-  handling.
+  declarative jurisdiction qualifier for the scoped dataflow or storage
+  context.
 
 When present, `jurisdiction` contains:
 

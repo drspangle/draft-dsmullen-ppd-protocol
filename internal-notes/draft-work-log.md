@@ -250,7 +250,19 @@ It is not part of the rendered Internet-Draft.
   semantic definitions for `purpose`, `action`, `source`, and
   `handling_context`.
 - Current near-term status: the next review should focus on whether the
-  protocol object definitions read naturally after the handling-context rename
-  and whether any remaining prose still overstates what the protocol itself is
+  protocol object definitions read naturally after the handling-context rename,
+  whether any remaining prose still overstates what the protocol itself is
   responsible for versus what belongs to deployment-specific enforcement or
-  management layers.
+  management layers, and whether any post-taxonomy-drift terminology
+  inconsistencies remain in examples or object descriptions.
+- Continued protocol-side review after the taxonomy pass:
+  - confirmed the remaining source issues are editorial rather than
+    architectural;
+  - identified older declaration-opening phrasing that still sounds like a
+    capability bag rather than descriptive dataflows; and
+  - identified repetitive Constraints Object wording that should be tightened
+    around scoped dataflows and taxonomy-defined qualifier meaning.
+- Current immediate next step: finish that wording cleanup, then do a short
+  rendered read of the protocol object definitions and examples before
+  deciding whether the protocol draft is ready for the next Datatracker
+  revision.
