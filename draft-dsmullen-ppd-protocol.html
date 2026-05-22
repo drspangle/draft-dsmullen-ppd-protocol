@@ -1646,7 +1646,7 @@ For that purpose, the baseline protocol defines:<a href="#section-4.4-3" class="
             <p id="section-4.4-6.2.1">the protocol version or profile identifier;<a href="#section-4.4-6.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-4.4-6.3">
-            <p id="section-4.4-6.3.1">the taxonomy version or versions understood by the service;<a href="#section-4.4-6.3.1" class="pilcrow">¶</a></p>
+            <p id="section-4.4-6.3.1">the taxonomy release or releases understood by the service;<a href="#section-4.4-6.3.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-4.4-6.4">
             <p id="section-4.4-6.4.1">whether participant declarations are supported;<a href="#section-4.4-6.4.1" class="pilcrow">¶</a></p>
@@ -2322,7 +2322,7 @@ canonical participant identifier established or confirmed by the service.<a href
         <h3 id="name-device-declaration-object">
 <a href="#section-7.7" class="section-number selfRef">7.7. </a><a href="#name-device-declaration-object" class="section-name selfRef">Device Declaration Object</a>
         </h3>
-<p id="section-7.7-1">The declaration object carries participant-supplied capability or data-handling
+<p id="section-7.7-1">The declaration object carries participant-supplied descriptive dataflow
 information.
 At minimum it contains <code>device_id</code>, <code>declaration_id</code>, and a non-empty
 <code>statements</code> array.
@@ -2358,13 +2358,12 @@ release context and any required non-core prefix declarations;<a href="#section-
 </li>
           <li class="normal" id="section-7.7-4.4">
             <p id="section-7.7-4.4.1"><code>statements</code> (required, non-empty array of Declaration Statement Objects):
-participant-supplied descriptive cases stating which taxonomy-defined
-combinations apply to this participant.<a href="#section-7.7-4.4.1" class="pilcrow">¶</a></p>
+participant-supplied descriptive dataflow cases stating which taxonomy-
+defined combinations apply to this participant.<a href="#section-7.7-4.4.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-7.7-5">If a declaration uses any non-core compact prefix in its statements or
-constraints, the
-<code>taxonomy</code> object is <span class="bcp14">REQUIRED</span>.<a href="#section-7.7-5" class="pilcrow">¶</a></p>
+constraints, the <code>taxonomy</code> object is <span class="bcp14">REQUIRED</span>.<a href="#section-7.7-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="declaration-statement-object">
@@ -2421,9 +2420,8 @@ structured qualifiers that refine the statement.<a href="#section-7.8-3.7.1" cla
         </h3>
 <p id="section-7.9-1">The comparison outcome object carries an optional coarse result for
 declaration-to-policy comparison on the declaration path.
-It is diagnostic and descriptive.
-It reports a coarse result of comparing participant-side atomic declaration
-statements against household-side atomic policy rules.
+It reports a coarse diagnostic result of comparing participant-side atomic
+declaration statements against household-side atomic policy rules.
 It does not change the meaning of the Effective Policy Object and it is not
 part of acknowledgment semantics.
 It <span class="bcp14">MUST NOT</span> be treated as a request for policy relaxation, an invitation to
@@ -2454,7 +2452,7 @@ brief human-readable explanation suitable for diagnostics or operator review.<a 
 <pre>
 {
   "device_id": "doorbell-7",
-  "declaration_id": "doorbell-7-capability-v1",
+  "declaration_id": "doorbell-7-declaration-v1",
   "taxonomy": {
     "release": "ppd-core-2026-05"
   },
@@ -2623,20 +2621,19 @@ qualifiers on atomic dataflows.<a href="#section-7.12-1" class="pilcrow">¶</a><
 <ul class="normal">
 <li class="normal" id="section-7.12-3.1">
             <p id="section-7.12-3.1.1"><code>retention</code> (optional, compact term identifier):
-baseline retention qualifier for the described or allowed or denied
-handling. The baseline compact form is term-valued; future specifications
-or deployment profiles <span class="bcp14">MAY</span> define more structured bounded-retention forms;
-and<a href="#section-7.12-3.1.1" class="pilcrow">¶</a></p>
+baseline retention qualifier for the scoped dataflow. The baseline compact
+form is term-valued; future specifications or deployment profiles <span class="bcp14">MAY</span>
+define more structured bounded-retention forms.<a href="#section-7.12-3.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.12-3.2">
             <p id="section-7.12-3.2.1"><code>processing_boundary</code> (optional, compact term identifier):
-processing-placement qualifier for the described or allowed or denied
-handling; and<a href="#section-7.12-3.2.1" class="pilcrow">¶</a></p>
+processing-placement qualifier for <code>use</code> or <code>inference</code> within the declared
+handling context.<a href="#section-7.12-3.2.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-7.12-3.3">
             <p id="section-7.12-3.3.1"><code>jurisdiction</code> (optional, object):
-declarative jurisdiction qualifier for the described or allowed or denied
-handling.<a href="#section-7.12-3.3.1" class="pilcrow">¶</a></p>
+declarative jurisdiction qualifier for the scoped dataflow or storage
+context.<a href="#section-7.12-3.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 <p id="section-7.12-4">When present, <code>jurisdiction</code> contains:<a href="#section-7.12-4" class="pilcrow">¶</a></p>
