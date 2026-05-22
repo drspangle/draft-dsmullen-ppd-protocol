@@ -443,7 +443,7 @@ The request body MUST be a Device Declaration Object.
 
 A declaration carries one or more descriptive statements that use the taxonomy
 dimensions defined in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as data type,
-purpose, action, source, and destination.
+purpose, action, source, and handling context.
 The taxonomy document defines the meaning and composition of those dimensions.
 
 A successful declaration response without comparison detail SHOULD use
@@ -539,11 +539,14 @@ Taxonomy release metadata remains secondary validation context.
 Deployments MAY use company-specific or other non-core taxonomies when their
 terms are declared through the applicable taxonomy context and remain reducible
 to the shared core semantic model defined by the companion taxonomy work.
-For roles such as `data_type`, `purpose`, `source`, `destination`,
-`processing_boundary`, and scoped `jurisdiction`, that reduction can rely on
-equivalence or broader/narrower placement as defined by the taxonomy.
+For roles such as `data_type`, `purpose`, `source`, `handling_context`,
+and `processing_boundary`, that reduction can rely on equivalence or
+broader/narrower placement as defined by the taxonomy.
 For the flat `action` family, the reduction needs to preserve exact action
 meaning.
+For structured `jurisdiction`, the reduction needs to preserve the declared
+`scope` and the family-specific country or subdivision comparison model
+defined by the taxonomy.
 
 For baseline interoperability, a compact term identifier MUST use the form
 `prefix:term`.
@@ -719,8 +722,12 @@ It contains:
   handling action the participant performs or may request;
 * `source` (required, compact term identifier):
   source context for the handled data;
-* `destination` (required, compact term identifier):
-  destination or handling target described by the participant; and
+* `handling_context` (required, compact term identifier):
+  target handling context described by the participant. For `collection`, this
+  identifies the context into which collected data is brought. For `use` and
+  `inference`, it identifies the context in which that handling occurs. For
+  `transfer`, it identifies the recipient-side context into which data is
+  transferred; and
 * `constraints` (optional, Constraints Object):
   structured qualifiers that refine the statement.
 
@@ -758,12 +765,12 @@ It contains:
   },
   "statements": [
     {
-      "statement_id": "media-security-local-use",
-      "data_type": "ppd:mediaData",
+      "statement_id": "content-security-local-use",
+      "data_type": "ppd:contentData",
       "purpose": "ppd:security",
       "action": "ppd:use",
       "source": "ppd:participantObserved",
-      "destination": "ppd:householdContext",
+      "handling_context": "ppd:householdContext",
       "constraints": {
         "processing_boundary": "ppd:onDeviceOnly"
       }
@@ -774,9 +781,13 @@ It contains:
       "purpose": "ppd:analyticsAndImprovement",
       "action": "ppd:transfer",
       "source": "ppd:participantObserved",
-      "destination": "ppd:vendorContext",
+      "handling_context": "ppd:vendorContext",
       "constraints": {
-        "retention": "ppd:indefinite"
+        "retention": "ppd:indefinite",
+        "jurisdiction": {
+          "scope": "transfer",
+          "countrycode": ["us"]
+        }
       }
     }
   ]
@@ -845,8 +856,12 @@ It contains:
   handling action covered by the rule;
 * `source` (required, compact term identifier):
   source context for the handled data;
-* `destination` (required, compact term identifier):
-  destination or handling target covered by the rule;
+* `handling_context` (required, compact term identifier):
+  target handling context covered by the rule. For `collection`, this
+  identifies the context into which collected data is brought. For `use` and
+  `inference`, it identifies the context in which that handling occurs. For
+  `transfer`, it identifies the recipient-side context into which data is
+  transferred;
 * `effect` (required, text):
   normative rule effect, currently one of `allow` or `deny`; and
 * `constraints` (optional, Constraints Object):
@@ -873,13 +888,26 @@ The initial standardized members are:
   and
 * `processing_boundary` (optional, compact term identifier):
   processing-placement qualifier for the described or allowed or denied
+  handling; and
+* `jurisdiction` (optional, object):
+  declarative jurisdiction qualifier for the described or allowed or denied
   handling.
 
-The companion taxonomy also defines a `jurisdiction` qualifier family shell.
-This revision of the protocol does not yet standardize a baseline wire member
-for that family, because interoperable participant-facing use depends on a
-later taxonomy revision or deployment profile that defines the shared scoped
-jurisdiction vocabulary and wire shape.
+When present, `jurisdiction` contains:
+
+* `scope` (required, text):
+  one of `collection`, `use`, `inference`, `transfer`, or `storage`;
+* `countrycode` (optional, array of text):
+  one or more lowercase country codes using the `countrycode` format
+  {{?RFC8006}}; and
+* `subdivisioncode` (optional, array of text):
+  one or more lowercase country subdivision codes using the `subdivisioncode`
+  format {{?RFC9388}}.
+
+At least one of `countrycode` or `subdivisioncode` MUST be present. A sender
+MUST NOT include an empty `countrycode` or `subdivisioncode` array. A receiver
+MUST treat an unknown `scope`, a malformed `jurisdiction` object, or an
+invalid country or subdivision code as invalid input.
 
 Future specifications or deployment profiles MAY define additional structured
 constraint members.
@@ -945,11 +973,11 @@ An Effective Policy Object example:
   "rules": [
     {
       "rule_id": "r1",
-      "data_type": "ppd:mediaData",
+      "data_type": "ppd:contentData",
       "purpose": "ppd:security",
       "action": "ppd:use",
       "source": "ppd:participantObserved",
-      "destination": "ppd:householdContext",
+      "handling_context": "ppd:householdContext",
       "effect": "allow",
       "constraints": {
         "processing_boundary": "ppd:onDeviceOnly"
