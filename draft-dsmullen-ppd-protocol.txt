@@ -5,7 +5,7 @@
 Network Working Group                                         D. Smullen
 Internet-Draft                                                B. Scriber
 Intended status: Informational                                 CableLabs
-Expires: 21 November 2026                                    20 May 2026
+Expires: 23 November 2026                                    22 May 2026
 
 
          Privacy Preference Declaration Protocol Specification
@@ -22,7 +22,10 @@ Abstract
    declaration, effective-policy retrieval, policy acknowledgment,
    renewal, and reassociation.  This document complements the PPD
    architecture and taxonomy documents by defining the message and
-   sequencing behavior needed for interoperable policy signaling.
+   sequencing behavior needed for interoperable policy signaling.  The
+   household policy instances carried by this protocol express privacy
+   preferences for signaling and comparison; they do not by themselves
+   define an enforcement mechanism that guarantees participant behavior.
 
 About This Document
 
@@ -52,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 November 2026.
+   This Internet-Draft will expire on 23 November 2026.
 
 Copyright Notice
 
@@ -147,6 +150,17 @@ Table of Contents
    protocol also defines how the home-side service and the device-side
    actor keep association current over time, including renewal and
    reassociation behavior.
+
+   The policy instances retrieved through this protocol express
+   household privacy preferences and comparison inputs.  They do not by
+   themselves create or prove a separate enforcement action against
+   participant behavior.  Deployment-specific enforcement, gating, or
+   control responses are outside the baseline participant-facing
+   protocol defined here, because this document standardizes only the
+   interoperable signaling path between the household-side endpoint and
+   the participant, while enforcement depends on deployment-specific
+   control surfaces and capabilities beyond that shared protocol
+   baseline.
 
    In the formal architecture terminology reused here, the device-side
    actor is the PPD participant.  That term can be easy to misread, so
@@ -585,9 +599,11 @@ Table of Contents
 
    A declaration carries one or more descriptive statements that use the
    taxonomy dimensions defined in [I-D.draft-dsmullen-ppd-taxonomy],
-   such as data type, purpose, action, source, and destination.  The
-   taxonomy document defines the meaning and composition of those
-   dimensions.
+   such as data type, purpose, action, source, and handling context.  In
+   this model, handling context means the context in which a dataflow
+   occurs or into which it is directed; it is not limited to transfer
+   destinations.  The taxonomy document defines the meaning and
+   composition of those dimensions.
 
    A successful declaration response without comparison detail SHOULD
    use 204 No Content.  When the service chooses to expose the result of
@@ -694,10 +710,12 @@ Table of Contents
    terms are declared through the applicable taxonomy context and remain
    reducible to the shared core semantic model defined by the companion
    taxonomy work.  For roles such as data_type, purpose, source,
-   destination, processing_boundary, and scoped jurisdiction, that
-   reduction can rely on equivalence or broader/narrower placement as
-   defined by the taxonomy.  For the flat action family, the reduction
-   needs to preserve exact action meaning.
+   handling_context, and processing_boundary, that reduction can rely on
+   equivalence or broader/narrower placement as defined by the taxonomy.
+   For the flat action family, the reduction needs to preserve exact
+   action meaning.  For structured jurisdiction, the reduction needs to
+   preserve the declared scope and the family-specific country or
+   subdivision comparison model defined by the taxonomy.
 
    For baseline interoperability, a compact term identifier MUST use the
    form prefix:term.  The prefix identifies either a reserved core
@@ -877,17 +895,21 @@ Table of Contents
    *  data_type (required, compact term identifier): data category to
       which the statement applies;
 
-   *  purpose (required, compact term identifier): purpose associated
-      with the described handling;
+   *  purpose (required, compact term identifier): why the dataflow
+      occurs;
 
-   *  action (required, compact term identifier): handling action the
-      participant performs or may request;
+   *  action (required, compact term identifier): which privacy-relevant
+      action the participant performs or may request;
 
-   *  source (required, compact term identifier): source context for the
-      handled data;
+   *  source (required, compact term identifier): immediate origin of
+      the data in that dataflow;
 
-   *  destination (required, compact term identifier): destination or
-      handling target described by the participant; and
+   *  handling_context (required, compact term identifier): context in
+      which the dataflow occurs or into which it is directed.  For
+      collection, this identifies the context into which collected data
+      is brought.  For use and inference, it identifies the context in
+      which that dataflow occurs.  For transfer, it identifies the
+      recipient-side context into which data is transferred; and
 
    *  constraints (optional, Constraints Object): structured qualifiers
       that refine the statement.
@@ -926,12 +948,12 @@ Table of Contents
      },
      "statements": [
        {
-         "statement_id": "media-security-local-use",
-         "data_type": "ppd:mediaData",
+         "statement_id": "content-security-local-use",
+         "data_type": "ppd:contentData",
          "purpose": "ppd:security",
          "action": "ppd:use",
          "source": "ppd:participantObserved",
-         "destination": "ppd:householdContext",
+         "handling_context": "ppd:householdContext",
          "constraints": {
            "processing_boundary": "ppd:onDeviceOnly"
          }
@@ -942,9 +964,13 @@ Table of Contents
          "purpose": "ppd:analyticsAndImprovement",
          "action": "ppd:transfer",
          "source": "ppd:participantObserved",
-         "destination": "ppd:vendorContext",
+         "handling_context": "ppd:vendorContext",
          "constraints": {
-           "retention": "ppd:indefinite"
+           "retention": "ppd:indefinite",
+           "jurisdiction": {
+             "scope": "transfer",
+             "countrycode": ["us"]
+           }
          }
        }
      ]
@@ -1014,17 +1040,21 @@ Table of Contents
    *  data_type (required, compact term identifier): data category to
       which the rule applies;
 
-   *  purpose (required, compact term identifier): purpose for which the
-      data handling is considered;
+   *  purpose (required, compact term identifier): why the dataflow
+      occurs;
 
-   *  action (required, compact term identifier): handling action
-      covered by the rule;
+   *  action (required, compact term identifier): which privacy-relevant
+      action the rule covers;
 
-   *  source (required, compact term identifier): source context for the
-      handled data;
+   *  source (required, compact term identifier): immediate origin of
+      the data in that dataflow;
 
-   *  destination (required, compact term identifier): destination or
-      handling target covered by the rule;
+   *  handling_context (required, compact term identifier): context in
+      which the dataflow occurs or into which it is directed.  For
+      collection, this identifies the context into which collected data
+      is brought.  For use and inference, it identifies the context in
+      which that dataflow occurs.  For transfer, it identifies the
+      recipient-side context into which data is transferred;
 
    *  effect (required, text): normative rule effect, currently one of
       allow or deny; and
@@ -1056,14 +1086,28 @@ Table of Contents
 
    *  processing_boundary (optional, compact term identifier):
       processing-placement qualifier for the described or allowed or
-      denied handling.
+      denied handling; and
 
-   The companion taxonomy also defines a jurisdiction qualifier family
-   shell.  This revision of the protocol does not yet standardize a
-   baseline wire member for that family, because interoperable
-   participant-facing use depends on a later taxonomy revision or
-   deployment profile that defines the shared scoped jurisdiction
-   vocabulary and wire shape.
+   *  jurisdiction (optional, object): declarative jurisdiction
+      qualifier for the described or allowed or denied handling.
+
+   When present, jurisdiction contains:
+
+   *  scope (required, text): one of collection, use, inference,
+      transfer, or storage;
+
+   *  countrycode (optional, array of text): one or more lowercase
+      country codes using the countrycode format [RFC8006]; and
+
+   *  subdivisioncode (optional, array of text): one or more lowercase
+      country subdivision codes using the subdivisioncode format
+      [RFC9388].
+
+   At least one of countrycode or subdivisioncode MUST be present.  A
+   sender MUST NOT include an empty countrycode or subdivisioncode
+   array.  A receiver MUST treat an unknown scope, a malformed
+   jurisdiction object, or an invalid country or subdivision code as
+   invalid input.
 
    Future specifications or deployment profiles MAY define additional
    structured constraint members.  A Constraints Object MUST NOT be
@@ -1131,11 +1175,11 @@ Table of Contents
      "rules": [
        {
          "rule_id": "r1",
-         "data_type": "ppd:mediaData",
+         "data_type": "ppd:contentData",
          "purpose": "ppd:security",
          "action": "ppd:use",
          "source": "ppd:participantObserved",
-         "destination": "ppd:householdContext",
+         "handling_context": "ppd:householdContext",
          "effect": "allow",
          "constraints": {
            "processing_boundary": "ppd:onDeviceOnly"
@@ -1387,10 +1431,21 @@ Table of Contents
               RFC 7564, DOI 10.17487/RFC7564, May 2015,
               <https://www.rfc-editor.org/rfc/rfc7564>.
 
+   [RFC8006]  Niven-Jenkins, B., Murray, R., Caulfield, M., and K. Ma,
+              "Content Delivery Network Interconnection (CDNI)
+              Metadata", RFC 8006, DOI 10.17487/RFC8006, December 2016,
+              <https://www.rfc-editor.org/rfc/rfc8006>.
+
    [RFC8785]  Rundgren, A., Jordan, B., and S. Erdtman, "JSON
               Canonicalization Scheme (JCS)", RFC 8785,
               DOI 10.17487/RFC8785, June 2020,
               <https://www.rfc-editor.org/rfc/rfc8785>.
+
+   [RFC9388]  Sopher, N. and S. Mishra, "Content Delivery Network
+              Interconnection (CDNI) Footprint Types: Country
+              Subdivision Code and Footprint Union", RFC 9388,
+              DOI 10.17487/RFC9388, July 2023,
+              <https://www.rfc-editor.org/rfc/rfc9388>.
 
 Authors' Addresses
 
