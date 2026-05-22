@@ -444,6 +444,8 @@ The request body MUST be a Device Declaration Object.
 A declaration carries one or more descriptive statements that use the taxonomy
 dimensions defined in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as data type,
 purpose, action, source, and handling context.
+In this model, handling context means the context a handling step is directed
+into or occurs within; it is not limited to transfer destinations.
 The taxonomy document defines the meaning and composition of those dimensions.
 
 A successful declaration response without comparison detail SHOULD use
