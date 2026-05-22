@@ -87,12 +87,6 @@ the protocol-side participant is a device or a service acting for a device, not
 the homeowner, household member, or operator who set or review household
 policy.
 
-This protocol does not define local dashboards, operator workflow, household
-policy authoring, device-behavior enforcement, or internal protocols between a
-PPD service endpoint and a distinct policy authority.
-Those functions can exist in deployments, but they are outside the baseline
-interoperable contract defined here.
-
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
@@ -452,6 +446,8 @@ A participant that does not submit a declaration can still establish
 association if it can retrieve and acknowledge the applicable policy instance.
 
 The request body MUST be a Device Declaration Object.
+See Device Declaration Object and Declaration Statement Object below for the
+precise object shape.
 
 A declaration carries one or more descriptive statements that use the taxonomy
 dimensions defined in {{?I-D.draft-dsmullen-ppd-taxonomy}}, such as data type,
@@ -482,6 +478,8 @@ Purpose:
 * communicate the association-freshness limit for current association.
 
 A successful response MUST be an Effective Policy Object.
+See Effective Policy Object and Policy Rule Object below for the precise
+object shape.
 
 A successful response SHOULD include policy-instance provenance fields that let later
 inspection distinguish the household baseline from any more specific inputs,
@@ -740,31 +738,10 @@ It contains:
   `collection`, this identifies the context into which collected data is
   brought. For `use` and `inference`, it identifies the context in which that
   dataflow occurs. For `transfer`, it identifies the recipient-side context
-  into which data is transferred; and
+  into which data is transferred. The semantic meaning of this field is
+  defined by {{?I-D.draft-dsmullen-ppd-taxonomy}}; and
 * `constraints` (optional, Constraints Object):
   structured qualifiers that refine the statement.
-
-## Comparison Outcome Object
-
-The comparison outcome object carries an optional coarse result for
-declaration-to-policy comparison on the declaration path.
-It reports a coarse diagnostic result of comparing participant-side atomic
-declaration statements against household-side atomic policy rules.
-It does not change the meaning of the Effective Policy Object and it is not
-part of acknowledgment semantics.
-It MUST NOT be treated as a request for policy relaxation, an invitation to
-begin a participant-driven bargaining loop, or a trigger for baseline
-homeowner consent prompting.
-
-It contains:
-
-* `declaration_id` (required, text):
-  declaration instance to which this comparison result applies;
-* `outcome` (required, text):
-  one of `compatible`, `conditionally_satisfiable`, `decision_required`,
-  `unsatisfiable`, or `indeterminate`; and
-* `detail` (optional, text):
-  brief human-readable explanation suitable for diagnostics or operator review.
 
 ### Example Device Declaration Object
 
@@ -806,6 +783,28 @@ It contains:
 }
 ~~~
 
+## Comparison Outcome Object
+
+The comparison outcome object carries an optional coarse result for
+declaration-to-policy comparison on the declaration path.
+It reports a coarse diagnostic result of comparing participant-side atomic
+declaration statements against household-side atomic policy rules.
+It does not change the meaning of the Effective Policy Object and it is not
+part of acknowledgment semantics.
+It MUST NOT be treated as a request for policy relaxation, an invitation to
+begin a participant-driven bargaining loop, or a trigger for baseline
+homeowner consent prompting.
+
+It contains:
+
+* `declaration_id` (required, text):
+  declaration instance to which this comparison result applies;
+* `outcome` (required, text):
+  one of `compatible`, `conditionally_satisfiable`, `decision_required`,
+  `unsatisfiable`, or `indeterminate`; and
+* `detail` (optional, text):
+  brief human-readable explanation suitable for diagnostics or operator review.
+
 ## Effective Policy Object
 
 The effective policy object represents the policy instance the participant must
@@ -846,6 +845,8 @@ An Effective Policy Object MUST contain exactly one of `renew_by` or
 These fields govern association freshness for the participant-facing lifecycle.
 They do not define abstract policy validity outside that lifecycle.
 If any rule uses a non-core compact prefix, the `taxonomy` object is REQUIRED.
+A complete example appears below under Example Effective Policy and
+Acknowledgment.
 
 ## Policy Rule Object
 
@@ -873,7 +874,8 @@ It contains:
   `collection`, this identifies the context into which collected data is
   brought. For `use` and `inference`, it identifies the context in which that
   dataflow occurs. For `transfer`, it identifies the recipient-side context
-  into which data is transferred;
+  into which data is transferred. The semantic meaning of this field is
+  defined by {{?I-D.draft-dsmullen-ppd-taxonomy}};
 * `effect` (required, text):
   normative rule effect, currently one of `allow` or `deny`; and
 * `constraints` (optional, Constraints Object):
@@ -890,6 +892,9 @@ qualifiers without requiring a large qualifier language in the baseline draft.
 It is shared by declaration statements and policy rules. The wire container is
 named `constraints`, but the companion taxonomy work defines its members as
 qualifiers on atomic dataflows.
+{{?I-D.draft-dsmullen-ppd-taxonomy}} also defines the semantic meaning of
+`retention`, `processing_boundary`, and `jurisdiction`; this document defines
+only their participant-facing wire representation.
 
 The initial standardized members are:
 
