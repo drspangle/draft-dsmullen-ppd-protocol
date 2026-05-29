@@ -3,6 +3,17 @@
 This file records drafting work for `draft-dsmullen-ppd-protocol.md`.
 It is not part of the rendered Internet-Draft.
 
+## 2026-05-29
+
+- Added `internal-notes/runtime-conflict-signaling-direction.md` to capture the
+  intended boundary between baseline acknowledgment, baseline association
+  state, and optional runtime conflict signaling after reviewing the live ESP32
+  demo behavior.
+- Recorded the specific follow-up that the protocol draft should say more
+  explicitly that runtime conflict may coexist with current association and is
+  separate from both acknowledgment semantics and deployment-specific
+  remediation behavior.
+
 ## 2026-05-07
 
 - Scaffolded this repository from the architecture-draft repository so it uses
