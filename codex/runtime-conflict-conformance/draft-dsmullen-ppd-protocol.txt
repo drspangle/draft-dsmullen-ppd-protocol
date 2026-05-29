@@ -160,11 +160,7 @@ Table of Contents
    interoperable signaling path between the household-side endpoint and
    the participant, while enforcement depends on deployment-specific
    control surfaces and capabilities beyond that shared protocol
-   baseline.  Deployments MAY define separate participant-side runtime
-   status or conflict signals, but those signals do not by themselves
-   redefine baseline association state, invalidate a current
-   acknowledgment, or require a mandatory remediation action within this
-   protocol.
+   baseline.
 
    In the formal architecture terminology reused here, the device-side
    actor is the PPD participant.  That term can be easy to misread, so
@@ -667,10 +663,7 @@ Table of Contents
    interpreted as a claim that the participant can satisfy every policy
    rule.  If deployments need richer participant-side compatibility or
    status reporting, that behavior MUST be defined separately from the
-   baseline acknowledgment.  In particular, a participant can remain
-   currently associated after acknowledging the current effective policy
-   while separately signaling optional runtime conflict or policy-
-   divergence information.
+   baseline acknowledgment.
 
    A successful acknowledgment response MUST be an Acknowledgment Result
    Object.  It returns the resulting association state and the next

@@ -1386,11 +1386,7 @@ enforcement, gating, or control responses are outside the baseline
 participant-facing protocol defined here, because this document standardizes
 only the interoperable signaling path between the household-side endpoint and
 the participant, while enforcement depends on deployment-specific control
-surfaces and capabilities beyond that shared protocol baseline.
-Deployments <span class="bcp14">MAY</span> define separate participant-side runtime status or conflict
-signals, but those signals do not by themselves redefine baseline association
-state, invalidate a current acknowledgment, or require a mandatory remediation
-action within this protocol.<a href="#section-1-3" class="pilcrow">¶</a></p>
+surfaces and capabilities beyond that shared protocol baseline.<a href="#section-1-3" class="pilcrow">¶</a></p>
 <p id="section-1-4">In the formal architecture terminology reused here, the device-side actor is
 the <code>PPD participant</code>.
 That term can be easy to misread, so this document makes the intended boundary
@@ -2079,10 +2075,7 @@ policy instance.<a href="#section-6.6.1-2.1.1" class="pilcrow">¶</a></p>
 It <span class="bcp14">MUST NOT</span> be interpreted as a claim that the participant can satisfy every
 policy rule.
 If deployments need richer participant-side compatibility or status reporting,
-that behavior <span class="bcp14">MUST</span> be defined separately from the baseline acknowledgment.
-In particular, a participant can remain currently associated after
-acknowledging the current effective policy while separately signaling optional
-runtime conflict or policy-divergence information.<a href="#section-6.6.1-4" class="pilcrow">¶</a></p>
+that behavior <span class="bcp14">MUST</span> be defined separately from the baseline acknowledgment.<a href="#section-6.6.1-4" class="pilcrow">¶</a></p>
 <p id="section-6.6.1-5">A successful acknowledgment response <span class="bcp14">MUST</span> be an Acknowledgment Result Object.
 It returns the resulting association state and the next freshness value to be
 used for maintaining current association.<a href="#section-6.6.1-5" class="pilcrow">¶</a></p>
