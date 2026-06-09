@@ -6,6 +6,12 @@ from the functional draft contents.
 Use this README to decide which existing note file should absorb new protocol
 draft work before creating another one.
 
+Implementation-backed cross-draft implications should not start here. Capture
+them first in the gateway repository's standards-facing handoff note
+[draft-notes/ppd-internet-draft-notes.md](https://code.cablelabs.com/cablelabs/security-evolution/federated-identity-authentication-and-privacy/user-centric-privacy/habanero-ppd-gateway/-/blob/main/draft-notes/ppd-internet-draft-notes.md),
+then copy only the protocol-specific normalized work into this directory when
+draft-local editorial notes are still needed.
+
 Use these files for:
 
 - protocol-draft editorial history
