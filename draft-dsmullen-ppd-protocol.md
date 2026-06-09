@@ -227,6 +227,9 @@ default-gateway probing, Wi-Fi onboarding hints, or comparable local-network
 mechanisms.
 Such mechanisms are optional discovery profiles unless a deployment profile
 requires them.
+A discovery profile MAY define an ordered candidate sequence for a deployment
+or participant class, but this protocol does not require one universal
+automatic sequence.
 Discovery yields candidate endpoints only; it does not establish authority.
 
 A participant that learns a candidate endpoint through any discovery method
@@ -637,6 +640,10 @@ It contains:
   reproducibility.
   These release identifiers are secondary validation context, not the primary
   semantic hook for taxonomy-bearing terms.
+
+A participant evaluates `security_profile` from this object as part of deciding
+whether it can continue with the candidate endpoint under the applicable
+deployment trust model.
 
 ## Device Registration Object
 

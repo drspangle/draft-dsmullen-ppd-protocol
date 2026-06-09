@@ -3,6 +3,15 @@
 This file records drafting work for `draft-dsmullen-ppd-protocol.md`.
 It is not part of the rendered Internet-Draft.
 
+## 2026-06-08
+
+- Tightened the protocol discovery language so optional discovery profiles may
+  define ordered candidate sequences without creating one universal automatic
+  sequence.
+- Clarified in the Service Metadata Object description that a participant uses
+  `security_profile` to decide whether it can continue with a candidate
+  endpoint under the applicable deployment trust model.
+
 ## 2026-05-29
 
 - Added `internal-notes/runtime-conflict-signaling-direction.md` to capture the
