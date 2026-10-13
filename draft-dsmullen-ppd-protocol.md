@@ -1031,8 +1031,10 @@ An Acknowledgment Result Object example is:
 
 ## Error Object
 
-Error responses SHOULD use `application/problem+json` and a structured error
-object with at least:
+Error responses SHOULD use Problem Details for HTTP APIs {{RFC9457}} with the
+`Content-Type: application/problem+json` header field.
+An error response using this format MUST conform to RFC 9457 and include at
+least:
 
 * `type`:
   problem type identifier, including PPD-specific problem types when
@@ -1040,7 +1042,8 @@ object with at least:
 * `title`:
   short problem summary;
 * `status`:
-  HTTP status code for this error; and
+  HTTP status code for this error, which MUST match the actual HTTP response
+  status; and
 * `detail`:
   human-readable explanation when useful.
 
@@ -1055,16 +1058,16 @@ Error responses MUST NOT leak more household or participant metadata than is
 necessary to explain the failure.
 
 For PPD-specific problems, the `type` member SHOULD be one of the following
-relative references:
+absolute URIs:
 
-* `invalid-request`
-* `invalid-participant-binding`
-* `reassociation-required`
-* `stale-association`
-* `policy-instance-mismatch`
-* `unsupported-taxonomy-term`
-* `term-resolution-failed`
-* `policy-authority-unavailable`
+* `https://iana.org/assignments/http-problem-types#ppd-invalid-request`
+* `https://iana.org/assignments/http-problem-types#ppd-invalid-participant-binding`
+* `https://iana.org/assignments/http-problem-types#ppd-reassociation-required`
+* `https://iana.org/assignments/http-problem-types#ppd-stale-association`
+* `https://iana.org/assignments/http-problem-types#ppd-policy-instance-mismatch`
+* `https://iana.org/assignments/http-problem-types#ppd-unsupported-taxonomy-term`
+* `https://iana.org/assignments/http-problem-types#ppd-term-resolution-failed`
+* `https://iana.org/assignments/http-problem-types#ppd-policy-authority-unavailable`
 
 # Error Handling
 
@@ -1088,6 +1091,10 @@ At minimum, participants need to handle:
 * other `5xx` errors for unexpected service failures.
 
 The initial PPD-specific problem vocabulary is:
+The short labels below describe the problems; they are not values for the
+Problem Details `type` member. When a PPD-specific problem type is used, the
+`type` member carries the corresponding absolute URI listed above.
+
 
 * `invalid-request`:
   malformed request payload, missing required fields, or invalid field shape;
@@ -1181,7 +1188,41 @@ considered.
 
 # IANA Considerations
 
-This document has no IANA actions.
+This document requests registration of the following problem types in the
+HTTP Problem Types registry {{RFC9457}}:
+
+* Type URI: `https://iana.org/assignments/http-problem-types#ppd-invalid-request`
+  Title: PPD Invalid Request
+  Recommended HTTP Status Code: `400`
+  Reference: This document
+* Type URI: `https://iana.org/assignments/http-problem-types#ppd-invalid-participant-binding`
+  Title: PPD Invalid Participant Binding
+  Recommended HTTP Status Code: `401` or `403`, as specified in this document
+  Reference: This document
+* Type URI: `https://iana.org/assignments/http-problem-types#ppd-reassociation-required`
+  Title: PPD Reassociation Required
+  Recommended HTTP Status Code: `409`
+  Reference: This document
+* Type URI: `https://iana.org/assignments/http-problem-types#ppd-stale-association`
+  Title: PPD Stale Association
+  Recommended HTTP Status Code: `409`
+  Reference: This document
+* Type URI: `https://iana.org/assignments/http-problem-types#ppd-policy-instance-mismatch`
+  Title: PPD Policy Instance Mismatch
+  Recommended HTTP Status Code: `409`
+  Reference: This document
+* Type URI: `https://iana.org/assignments/http-problem-types#ppd-unsupported-taxonomy-term`
+  Title: PPD Unsupported Taxonomy Term
+  Recommended HTTP Status Code: `422`
+  Reference: This document
+* Type URI: `https://iana.org/assignments/http-problem-types#ppd-term-resolution-failed`
+  Title: PPD Term Resolution Failed
+  Recommended HTTP Status Code: `422`
+  Reference: This document
+* Type URI: `https://iana.org/assignments/http-problem-types#ppd-policy-authority-unavailable`
+  Title: PPD Policy Authority Unavailable
+  Recommended HTTP Status Code: `503`
+  Reference: This document
 
 --- normative
 

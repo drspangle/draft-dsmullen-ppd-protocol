@@ -87,6 +87,45 @@ conventional:
 This keeps the participant-facing semantics clear without overloading the HTTP
 status space.
 
+## 2026-10-13
+
+### Problem Type URI Namespace
+
+Use absolute URIs from the IANA HTTP Problem Types registry for PPD-specific
+Problem Details `type` values. The URI prefix is:
+
+`https://iana.org/assignments/http-problem-types#ppd-`
+
+Append the PPD problem name to that prefix, for example:
+
+`https://iana.org/assignments/http-problem-types#ppd-invalid-request`
+
+The protocol defines eight types: `invalid-request`,
+`invalid-participant-binding`, `reassociation-required`, `stale-association`,
+`policy-instance-mismatch`, `unsupported-taxonomy-term`,
+`term-resolution-failed`, and `policy-authority-unavailable`. The draft's IANA
+Considerations request registers each URI with a stable title, recommended HTTP
+status code, and specification reference.
+
+This choice makes each problem type's identity independent of a household's
+origin, API base path, and endpoint. A relative value such as `invalid-request`
+would resolve differently when an API is mounted at different paths. The
+`ppd-` prefix avoids collisions with other entries in the shared registry and
+does not change the taxonomy's term-identifier namespace.
+
+RFC 9457 permits the IANA registry URI prefix and notes that these identifiers
+may not individually resolve. Consumers compare the absolute URI as the
+problem type identifier; they do not resolve it against the PPD service URI.
+Each type definition still needs its own title and recommended status code.
+
+The registry uses Specification Required review and is intended for common,
+widely used problem types; it excludes vendor-, application-, and
+deployment-specific values. The PPD types are proposed as protocol-wide
+interoperability terms, not implementation-specific errors. Designated-expert
+acceptance is not guaranteed. If the request is considered out of scope, choose
+a stable, controlled absolute URI namespace before publication rather than
+falling back to endpoint-relative identifiers.
+
 ### Prototype Alignment Note
 
 The current Habanero prototype already behaves broadly this way at the HTTP
