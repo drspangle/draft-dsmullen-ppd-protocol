@@ -4,8 +4,8 @@
 
 Network Working Group                                         D. Smullen
 Internet-Draft                                                B. Scriber
-Intended status: Informational                                 CableLabs
-Expires: 23 November 2026                                    22 May 2026
+Intended status: Standards Track                               CableLabs
+Expires: 16 April 2027                                   13 October 2026
 
 
          Privacy Preference Declaration Protocol Specification
@@ -55,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 23 November 2026.
+   This Internet-Draft will expire on 16 April 2027.
 
 Copyright Notice
 
@@ -90,15 +90,15 @@ Table of Contents
    6.  Protocol Operations
      6.1.  Overview
      6.2.  Metadata Confirmation
-       6.2.1.  GET /ppd/v1/meta
+       6.2.1.  GET /.well-known/ppd
      6.3.  Registration
-       6.3.1.  POST /ppd/v1/device/register
+       6.3.1.  POST device/register
      6.4.  Declaration
-       6.4.1.  POST /ppd/v1/device/declaration
+       6.4.1.  POST device/declaration
      6.5.  Effective Policy Retrieval
-       6.5.1.  GET /ppd/v1/policy/effective/{device_id}
+       6.5.1.  GET policy/effective/{device_id}
      6.6.  Policy Acknowledgment
-       6.6.1.  POST /ppd/v1/device/ack
+       6.6.1.  POST device/ack
    7.  Message Objects
      7.1.  Compact Term Identifiers
      7.2.  Taxonomy Context Object
@@ -261,9 +261,17 @@ Table of Contents
 
    *  HTTP over IP;
 
-   *  the path prefix /ppd/v1; and
-
    *  JSON request and response bodies using application/json.
+
+   HTTP method, status-code, and representation semantics follow RFC
+   9110 [RFC9110] unless this document specifies otherwise.  Any message
+   body containing a PPD request or successful response object MUST use
+   Content-Type: application/json.
+
+   The protocol does not prescribe a fixed deployment path for its API.
+   The participant discovers the API base URI through the origin-level
+   well-known resource defined below, and resolves the operation
+   references against that base URI using [RFC3986].
 
    This document treats JSON as the baseline interoperable encoding.
    More compact encodings MAY be defined by future deployment profiles
@@ -326,38 +334,66 @@ Table of Contents
 
 4.4.  Candidate Discovery and Metadata Confirmation
 
-   Every participant MUST support a configured or provisioned
-   participant-facing PPD service endpoint.  That is the minimum
-   interoperable discovery floor.
+   Every participant MUST support a configured or provisioned candidate
+   PPD service origin.  That is the minimum interoperable discovery
+   floor.  A candidate origin is an HTTP or HTTPS URI identifying a
+   scheme, host, and optional port; a non-default port MUST be explicit.
+   It MUST NOT contain user information, a non-root path, a query, or a
+   fragment.  A discovery profile that yields only a hostname MUST
+   define how the scheme and port are selected.
 
    This protocol does not standardize one universal automatic discovery
    mechanism.  Participants MAY additionally learn candidate PPD service
-   endpoints through local naming, DHCP-delivered hints, multicast
-   service discovery, default-gateway probing, Wi-Fi onboarding hints,
-   or comparable local-network mechanisms.  Such mechanisms are optional
-   discovery profiles unless a deployment profile requires them.
-   Discovery yields candidate endpoints only; it does not establish
-   authority.
+   origins through local naming, DHCP-delivered hints, multicast service
+   discovery, default-gateway probing, Wi-Fi onboarding hints, or
+   comparable local-network mechanisms.  Such mechanisms are optional
+   discovery profiles unless a deployment profile requires them.  A
+   discovery profile MAY define an ordered candidate sequence for a
+   deployment or participant class, but this protocol does not require
+   one universal automatic sequence.  Discovery yields candidate origins
+   only; it does not establish authority.
 
-   A participant that learns a candidate endpoint through any discovery
+   A participant that learns a candidate origin through any discovery
    method MUST confirm that the endpoint supports this protocol before
-   deeper interaction.  For that purpose, the baseline protocol defines:
+   deeper interaction.  For an HTTP or HTTPS candidate origin, the
+   participant retrieves the Service Metadata Object from the origin-
+   level well-known URI /.well-known/ppd, defined in accordance with
+   [RFC8615].  The well-known URI confirms the PPD service and
+   advertises its API base URI; it does not require the API itself to be
+   mounted at the origin root.  Retrieving the metadata confirms
+   protocol support but does not establish endpoint authority or trust.
 
-   *  GET /ppd/v1/meta
+   The Service Metadata Object MUST include a service_base_uri
+   identifying the API base URI for the advertised protocol version.  It
+   MUST be an absolute HTTP or HTTPS URI whose scheme, host, and
+   effective port match the candidate origin, with a path ending in /
+   and no userinfo, query, or fragment component.  The path MAY include
+   any deployment-selected prefix, including a version segment.
+   Operation references defined below are relative URI references and
+   MUST be resolved against service_base_uri according to [RFC3986].
 
-   The metadata response is expected to identify at least:
+   For example, if the candidate origin is https://home.example:8443 and
+   the metadata advertises https://home.example:8443/home/ppd/v1/,
+   resolving the relative reference device/register yields
+   https://home.example:8443/home/ppd/v1/device/register.
 
-   *  the participant-facing service URI;
+   The metadata response MUST include the following fields:
 
-   *  the protocol version or profile identifier;
+   *  service_base_uri, identifying the participant-facing API base URI;
 
-   *  the taxonomy release or releases understood by the service;
+   *  protocol_version, identifying the protocol version or profile;
 
-   *  whether participant declarations are supported;
+   *  declaration_supported, indicating whether participant declarations
+      are supported;
 
-   *  whether protected acknowledgments are supported; and
+   *  ack_supported, indicating whether protected acknowledgments are
+      supported; and
 
-   *  the expected security mode or trust profile.
+   *  security_profile, identifying the expected deployment security
+      profile.
+
+   The response MAY also include supported_taxonomy_releases to identify
+   taxonomy releases understood by the service.
 
    The metadata response MUST NOT expose household policy contents,
    participant inventory, or acknowledgment history before the normal
@@ -371,12 +407,12 @@ Table of Contents
 
    The baseline participant lifecycle is:
 
-   1.  obtain one or more candidate PPD service endpoints;
+   1.  obtain one or more candidate PPD service origins;
 
-   2.  confirm a selected endpoint using GET /ppd/v1/meta;
+   2.  retrieve metadata from GET /.well-known/ppd on a selected origin;
 
-   3.  authenticate the selected endpoint according to the deployment's
-       trust profile;
+   3.  authenticate the advertised service endpoint according to the
+       deployment's trust profile;
 
    4.  register participant identity and metadata;
 
@@ -408,7 +444,8 @@ Table of Contents
    For baseline interoperability, the minimum renewal procedure is:
 
    1.  the participant retrieves the current applicable effective policy
-       instance using GET /ppd/v1/policy/effective/{device_id};
+       instance using the relative reference policy/
+       effective/{device_id} resolved against service_base_uri;
 
    2.  if the returned policy_id and policy_hash still identify the same
        policy instance the participant currently treats as associated,
@@ -495,15 +532,18 @@ Table of Contents
 
    The baseline participant-facing operation set is:
 
-   1.  GET /ppd/v1/meta
+   1.  GET /.well-known/ppd on the candidate origin
 
-   2.  POST /ppd/v1/device/register
+   2.  POST device/register relative to service_base_uri
 
-   3.  POST /ppd/v1/device/declaration (optional)
+   3.  POST device/declaration relative to service_base_uri (optional)
 
-   4.  GET /ppd/v1/policy/effective/{device_id}
+   4.  GET policy/effective/{device_id} relative to service_base_uri
 
-   5.  POST /ppd/v1/device/ack
+   5.  POST device/ack relative to service_base_uri
+
+   The operation references in this list are relative URI references,
+   not origin-root paths.
 
    These operations form a narrow control path.  They let a device-side
    participant confirm the home-side service, identify itself,
@@ -524,7 +564,10 @@ Table of Contents
 
 6.2.  Metadata Confirmation
 
-6.2.1.  GET /ppd/v1/meta
+6.2.1.  GET /.well-known/ppd
+
+   This request targets the root-level well-known URI on a candidate
+   origin.  It is defined for the http and https URI schemes.
 
    Purpose:
 
@@ -536,11 +579,14 @@ Table of Contents
    *  communicate security expectations before registration or policy
       retrieval.
 
-   A successful response MUST be a Service Metadata Object.
+   A successful response MUST include a Service Metadata Object and the
+   Content-Type: application/json header field.
 
 6.3.  Registration
 
-6.3.1.  POST /ppd/v1/device/register
+6.3.1.  POST device/register
+
+   Resolve this relative reference against service_base_uri.
 
    Purpose:
 
@@ -578,7 +624,9 @@ Table of Contents
 
 6.4.  Declaration
 
-6.4.1.  POST /ppd/v1/device/declaration
+6.4.1.  POST device/declaration
+
+   Resolve this relative reference against service_base_uri.
 
    Purpose:
 
@@ -613,7 +661,11 @@ Table of Contents
 
 6.5.  Effective Policy Retrieval
 
-6.5.1.  GET /ppd/v1/policy/effective/{device_id}
+6.5.1.  GET policy/effective/{device_id}
+
+   Resolve this relative reference against service_base_uri.  The
+   {device_id} template value MUST be percent-encoded as a single URI
+   path segment before the reference is resolved.
 
    Purpose:
 
@@ -650,7 +702,9 @@ Table of Contents
 
 6.6.  Policy Acknowledgment
 
-6.6.1.  POST /ppd/v1/device/ack
+6.6.1.  POST device/ack
+
+   Resolve this relative reference against service_base_uri.
 
    Purpose:
 
@@ -776,8 +830,10 @@ Table of Contents
    The service metadata object describes a candidate endpoint before
    deeper interaction.  It contains:
 
-   *  service_uri (required, URI string): canonical participant-facing
-      service URI;
+   *  service_base_uri (required, absolute HTTP or HTTPS URI): API base
+      URI for the advertised protocol version, with the same scheme,
+      host, and effective port as the candidate origin, a path ending in
+      /, and no userinfo, query, or fragment;
 
    *  protocol_version (required, text): protocol version or profile
       identifier for the participant-facing contract;
@@ -797,6 +853,10 @@ Table of Contents
       reproducibility.  These release identifiers are secondary
       validation context, not the primary semantic hook for taxonomy-
       bearing terms.
+
+   A participant evaluates security_profile from this object as part of
+   deciding whether it can continue with the candidate endpoint under
+   the applicable deployment trust model.
 
 7.5.  Device Registration Object
 
@@ -1210,15 +1270,18 @@ Table of Contents
 
 7.15.  Error Object
 
-   Error responses SHOULD use application/problem+json and a structured
-   error object with at least:
+   Error responses SHOULD use Problem Details for HTTP APIs [RFC9457]
+   with the Content-Type: application/problem+json header field.  An
+   error response using this format MUST conform to RFC 9457 and include
+   at least:
 
    *  type: problem type identifier, including PPD-specific problem
       types when applicable;
 
    *  title: short problem summary;
 
-   *  status: HTTP status code for this error; and
+   *  status: HTTP status code for this error, which MUST match the
+      actual HTTP response status; and
 
    *  detail: human-readable explanation when useful.
 
@@ -1232,23 +1295,31 @@ Table of Contents
    than is necessary to explain the failure.
 
    For PPD-specific problems, the type member SHOULD be one of the
-   following relative references:
+   following absolute URIs:
 
-   *  invalid-request
+   *  https://iana.org/assignments/http-problem-types#ppd-invalid-
+      request
 
-   *  invalid-participant-binding
+   *  https://iana.org/assignments/http-problem-types#ppd-invalid-
+      participant-binding
 
-   *  reassociation-required
+   *  https://iana.org/assignments/http-problem-types#ppd-reassociation-
+      required
 
-   *  stale-association
+   *  https://iana.org/assignments/http-problem-types#ppd-stale-
+      association
 
-   *  policy-instance-mismatch
+   *  https://iana.org/assignments/http-problem-types#ppd-policy-
+      instance-mismatch
 
-   *  unsupported-taxonomy-term
+   *  https://iana.org/assignments/http-problem-types#ppd-unsupported-
+      taxonomy-term
 
-   *  term-resolution-failed
+   *  https://iana.org/assignments/http-problem-types#ppd-term-
+      resolution-failed
 
-   *  policy-authority-unavailable
+   *  https://iana.org/assignments/http-problem-types#ppd-policy-
+      authority-unavailable
 
 8.  Error Handling
 
@@ -1282,6 +1353,11 @@ Table of Contents
    *  other 5xx errors for unexpected service failures.
 
    The initial PPD-specific problem vocabulary is:
+
+   The short labels below describe the problems; they are not values for
+   the Problem Details type member.  When a PPD-specific problem type is
+   used, the type member carries the corresponding absolute URI listed
+   above.
 
    *  invalid-request: malformed request payload, missing required
       fields, or invalid field shape;
@@ -1391,7 +1467,60 @@ Table of Contents
 
 11.  IANA Considerations
 
-   This document has no IANA actions.
+   This document requests registration of the following problem types in
+   the HTTP Problem Types registry [RFC9457]:
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      invalid-request Title: PPD Invalid Request Recommended HTTP Status
+      Code: 400 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      invalid-participant-binding Title: PPD Invalid Participant Binding
+      Recommended HTTP Status Code: 401 or 403, as specified in this
+      document Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      reassociation-required Title: PPD Reassociation Required
+      Recommended HTTP Status Code: 409 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      stale-association Title: PPD Stale Association Recommended HTTP
+      Status Code: 409 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      policy-instance-mismatch Title: PPD Policy Instance Mismatch
+      Recommended HTTP Status Code: 409 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      unsupported-taxonomy-term Title: PPD Unsupported Taxonomy Term
+      Recommended HTTP Status Code: 422 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      term-resolution-failed Title: PPD Term Resolution Failed
+      Recommended HTTP Status Code: 422 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      policy-authority-unavailable Title: PPD Policy Authority
+      Unavailable Recommended HTTP Status Code: 503 Reference: This
+      document
+
+   This document requests registration of the following URI suffix in
+   the Well-Known URI Registry [RFC8615]:
+
+   *  URI suffix: ppd
+
+   *  Change controller: IETF
+
+   *  Specification document(s): This document
+
+   *  Status: permanent
+
+   *  URI schemes: http, https
+
+   *  Related information: A GET request to /.well-known/ppd returns a
+      Service Metadata Object using application/json.  The object
+      identifies the participant-facing PPD API base URI for the
+      advertised protocol version.
 
 12.  References
 
@@ -1402,25 +1531,43 @@ Table of Contents
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2119>.
 
+   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
+              Resource Identifier (URI): Generic Syntax", STD 66,
+              RFC 3986, DOI 10.17487/RFC3986, January 2005,
+              <https://www.rfc-editor.org/rfc/rfc3986>.
+
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC8615]  Nottingham, M., "Well-Known Uniform Resource Identifiers
+              (URIs)", RFC 8615, DOI 10.17487/RFC8615, May 2019,
+              <https://www.rfc-editor.org/rfc/rfc8615>.
+
+   [RFC9110]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
+              Ed., "HTTP Semantics", STD 97, RFC 9110,
+              DOI 10.17487/RFC9110, June 2022,
+              <https://www.rfc-editor.org/rfc/rfc9110>.
+
+   [RFC9457]  Nottingham, M., Wilde, E., and S. Dalal, "Problem Details
+              for HTTP APIs", RFC 9457, DOI 10.17487/RFC9457, July 2023,
+              <https://www.rfc-editor.org/rfc/rfc9457>.
 
 12.2.  Informative References
 
    [I-D.draft-dsmullen-ppd-architecture]
               Smullen, D. and B. Scriber, "Privacy Preference
               Declaration for Home Networks", Work in Progress,
-              Internet-Draft, draft-dsmullen-ppd-architecture-08, 20 May
-              2026, <https://datatracker.ietf.org/doc/html/draft-
-              dsmullen-ppd-architecture-08>.
+              Internet-Draft, draft-dsmullen-ppd-architecture-11, 13
+              October 2026, <https://datatracker.ietf.org/doc/html/
+              draft-dsmullen-ppd-architecture-11>.
 
    [I-D.draft-dsmullen-ppd-taxonomy]
               Smullen, D. and B. Scriber, "Privacy Preference
               Declaration Taxonomy", Work in Progress, Internet-Draft,
-              draft-dsmullen-ppd-taxonomy-04, 20 May 2026,
+              draft-dsmullen-ppd-taxonomy-05, 22 May 2026,
               <https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-
-              taxonomy-04>.
+              taxonomy-05>.
 
    [RFC3339]  Klyne, G. and C. Newman, "Date and Time on the Internet:
               Timestamps", RFC 3339, DOI 10.17487/RFC3339, July 2002,
