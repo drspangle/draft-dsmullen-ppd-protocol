@@ -4,8 +4,8 @@
 
 Network Working Group                                         D. Smullen
 Internet-Draft                                                B. Scriber
-Intended status: Informational                                 CableLabs
-Expires: 21 November 2026                                    20 May 2026
+Intended status: Standards Track                               CableLabs
+Expires: 16 April 2027                                   13 October 2026
 
 
          Privacy Preference Declaration Protocol Specification
@@ -22,7 +22,10 @@ Abstract
    declaration, effective-policy retrieval, policy acknowledgment,
    renewal, and reassociation.  This document complements the PPD
    architecture and taxonomy documents by defining the message and
-   sequencing behavior needed for interoperable policy signaling.
+   sequencing behavior needed for interoperable policy signaling.  The
+   household policy instances carried by this protocol express privacy
+   preferences for signaling and comparison; they do not by themselves
+   define an enforcement mechanism that guarantees participant behavior.
 
 About This Document
 
@@ -52,7 +55,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 21 November 2026.
+   This Internet-Draft will expire on 16 April 2027.
 
 Copyright Notice
 
@@ -87,15 +90,15 @@ Table of Contents
    6.  Protocol Operations
      6.1.  Overview
      6.2.  Metadata Confirmation
-       6.2.1.  GET /ppd/v1/meta
+       6.2.1.  GET /.well-known/ppd
      6.3.  Registration
-       6.3.1.  POST /ppd/v1/device/register
+       6.3.1.  POST device/register
      6.4.  Declaration
-       6.4.1.  POST /ppd/v1/device/declaration
+       6.4.1.  POST device/declaration
      6.5.  Effective Policy Retrieval
-       6.5.1.  GET /ppd/v1/policy/effective/{device_id}
+       6.5.1.  GET policy/effective/{device_id}
      6.6.  Policy Acknowledgment
-       6.6.1.  POST /ppd/v1/device/ack
+       6.6.1.  POST device/ack
    7.  Message Objects
      7.1.  Compact Term Identifiers
      7.2.  Taxonomy Context Object
@@ -105,8 +108,8 @@ Table of Contents
      7.6.  Registration Result Object
      7.7.  Device Declaration Object
      7.8.  Declaration Statement Object
+       7.8.1.  Example Device Declaration Object
      7.9.  Comparison Outcome Object
-       7.9.1.  Example Device Declaration Object
      7.10. Effective Policy Object
      7.11. Policy Rule Object
      7.12. Constraints Object
@@ -148,18 +151,23 @@ Table of Contents
    actor keep association current over time, including renewal and
    reassociation behavior.
 
+   The policy instances retrieved through this protocol express
+   household privacy preferences and comparison inputs.  They do not by
+   themselves create or prove a separate enforcement action against
+   participant behavior.  Deployment-specific enforcement, gating, or
+   control responses are outside the baseline participant-facing
+   protocol defined here, because this document standardizes only the
+   interoperable signaling path between the household-side endpoint and
+   the participant, while enforcement depends on deployment-specific
+   control surfaces and capabilities beyond that shared protocol
+   baseline.
+
    In the formal architecture terminology reused here, the device-side
    actor is the PPD participant.  That term can be easy to misread, so
    this document makes the intended boundary explicit: the protocol-side
    participant is a device or a service acting for a device, not the
    homeowner, household member, or operator who set or review household
    policy.
-
-   This protocol does not define local dashboards, operator workflow,
-   household policy authoring, device-behavior enforcement, or internal
-   protocols between a PPD service endpoint and a distinct policy
-   authority.  Those functions can exist in deployments, but they are
-   outside the baseline interoperable contract defined here.
 
 2.  Conventions and Definitions
 
@@ -253,9 +261,17 @@ Table of Contents
 
    *  HTTP over IP;
 
-   *  the path prefix /ppd/v1; and
-
    *  JSON request and response bodies using application/json.
+
+   HTTP method, status-code, and representation semantics follow RFC
+   9110 [RFC9110] unless this document specifies otherwise.  Any message
+   body containing a PPD request or successful response object MUST use
+   Content-Type: application/json.
+
+   The protocol does not prescribe a fixed deployment path for its API.
+   The participant discovers the API base URI through the origin-level
+   well-known resource defined below, and resolves the operation
+   references against that base URI using [RFC3986].
 
    This document treats JSON as the baseline interoperable encoding.
    More compact encodings MAY be defined by future deployment profiles
@@ -318,38 +334,66 @@ Table of Contents
 
 4.4.  Candidate Discovery and Metadata Confirmation
 
-   Every participant MUST support a configured or provisioned
-   participant-facing PPD service endpoint.  That is the minimum
-   interoperable discovery floor.
+   Every participant MUST support a configured or provisioned candidate
+   PPD service origin.  That is the minimum interoperable discovery
+   floor.  A candidate origin is an HTTP or HTTPS URI identifying a
+   scheme, host, and optional port; a non-default port MUST be explicit.
+   It MUST NOT contain user information, a non-root path, a query, or a
+   fragment.  A discovery profile that yields only a hostname MUST
+   define how the scheme and port are selected.
 
    This protocol does not standardize one universal automatic discovery
    mechanism.  Participants MAY additionally learn candidate PPD service
-   endpoints through local naming, DHCP-delivered hints, multicast
-   service discovery, default-gateway probing, Wi-Fi onboarding hints,
-   or comparable local-network mechanisms.  Such mechanisms are optional
-   discovery profiles unless a deployment profile requires them.
-   Discovery yields candidate endpoints only; it does not establish
-   authority.
+   origins through local naming, DHCP-delivered hints, multicast service
+   discovery, default-gateway probing, Wi-Fi onboarding hints, or
+   comparable local-network mechanisms.  Such mechanisms are optional
+   discovery profiles unless a deployment profile requires them.  A
+   discovery profile MAY define an ordered candidate sequence for a
+   deployment or participant class, but this protocol does not require
+   one universal automatic sequence.  Discovery yields candidate origins
+   only; it does not establish authority.
 
-   A participant that learns a candidate endpoint through any discovery
+   A participant that learns a candidate origin through any discovery
    method MUST confirm that the endpoint supports this protocol before
-   deeper interaction.  For that purpose, the baseline protocol defines:
+   deeper interaction.  For an HTTP or HTTPS candidate origin, the
+   participant retrieves the Service Metadata Object from the origin-
+   level well-known URI /.well-known/ppd, defined in accordance with
+   [RFC8615].  The well-known URI confirms the PPD service and
+   advertises its API base URI; it does not require the API itself to be
+   mounted at the origin root.  Retrieving the metadata confirms
+   protocol support but does not establish endpoint authority or trust.
 
-   *  GET /ppd/v1/meta
+   The Service Metadata Object MUST include a service_base_uri
+   identifying the API base URI for the advertised protocol version.  It
+   MUST be an absolute HTTP or HTTPS URI whose scheme, host, and
+   effective port match the candidate origin, with a path ending in /
+   and no userinfo, query, or fragment component.  The path MAY include
+   any deployment-selected prefix, including a version segment.
+   Operation references defined below are relative URI references and
+   MUST be resolved against service_base_uri according to [RFC3986].
 
-   The metadata response is expected to identify at least:
+   For example, if the candidate origin is https://home.example:8443 and
+   the metadata advertises https://home.example:8443/home/ppd/v1/,
+   resolving the relative reference device/register yields
+   https://home.example:8443/home/ppd/v1/device/register.
 
-   *  the participant-facing service URI;
+   The metadata response MUST include the following fields:
 
-   *  the protocol version or profile identifier;
+   *  service_base_uri, identifying the participant-facing API base URI;
 
-   *  the taxonomy version or versions understood by the service;
+   *  protocol_version, identifying the protocol version or profile;
 
-   *  whether participant declarations are supported;
+   *  declaration_supported, indicating whether participant declarations
+      are supported;
 
-   *  whether protected acknowledgments are supported; and
+   *  ack_supported, indicating whether protected acknowledgments are
+      supported; and
 
-   *  the expected security mode or trust profile.
+   *  security_profile, identifying the expected deployment security
+      profile.
+
+   The response MAY also include supported_taxonomy_releases to identify
+   taxonomy releases understood by the service.
 
    The metadata response MUST NOT expose household policy contents,
    participant inventory, or acknowledgment history before the normal
@@ -363,12 +407,12 @@ Table of Contents
 
    The baseline participant lifecycle is:
 
-   1.  obtain one or more candidate PPD service endpoints;
+   1.  obtain one or more candidate PPD service origins;
 
-   2.  confirm a selected endpoint using GET /ppd/v1/meta;
+   2.  retrieve metadata from GET /.well-known/ppd on a selected origin;
 
-   3.  authenticate the selected endpoint according to the deployment's
-       trust profile;
+   3.  authenticate the advertised service endpoint according to the
+       deployment's trust profile;
 
    4.  register participant identity and metadata;
 
@@ -400,7 +444,8 @@ Table of Contents
    For baseline interoperability, the minimum renewal procedure is:
 
    1.  the participant retrieves the current applicable effective policy
-       instance using GET /ppd/v1/policy/effective/{device_id};
+       instance using the relative reference policy/
+       effective/{device_id} resolved against service_base_uri;
 
    2.  if the returned policy_id and policy_hash still identify the same
        policy instance the participant currently treats as associated,
@@ -487,15 +532,18 @@ Table of Contents
 
    The baseline participant-facing operation set is:
 
-   1.  GET /ppd/v1/meta
+   1.  GET /.well-known/ppd on the candidate origin
 
-   2.  POST /ppd/v1/device/register
+   2.  POST device/register relative to service_base_uri
 
-   3.  POST /ppd/v1/device/declaration (optional)
+   3.  POST device/declaration relative to service_base_uri (optional)
 
-   4.  GET /ppd/v1/policy/effective/{device_id}
+   4.  GET policy/effective/{device_id} relative to service_base_uri
 
-   5.  POST /ppd/v1/device/ack
+   5.  POST device/ack relative to service_base_uri
+
+   The operation references in this list are relative URI references,
+   not origin-root paths.
 
    These operations form a narrow control path.  They let a device-side
    participant confirm the home-side service, identify itself,
@@ -516,7 +564,10 @@ Table of Contents
 
 6.2.  Metadata Confirmation
 
-6.2.1.  GET /ppd/v1/meta
+6.2.1.  GET /.well-known/ppd
+
+   This request targets the root-level well-known URI on a candidate
+   origin.  It is defined for the http and https URI schemes.
 
    Purpose:
 
@@ -528,11 +579,14 @@ Table of Contents
    *  communicate security expectations before registration or policy
       retrieval.
 
-   A successful response MUST be a Service Metadata Object.
+   A successful response MUST include a Service Metadata Object and the
+   Content-Type: application/json header field.
 
 6.3.  Registration
 
-6.3.1.  POST /ppd/v1/device/register
+6.3.1.  POST device/register
+
+   Resolve this relative reference against service_base_uri.
 
    Purpose:
 
@@ -570,7 +624,9 @@ Table of Contents
 
 6.4.  Declaration
 
-6.4.1.  POST /ppd/v1/device/declaration
+6.4.1.  POST device/declaration
+
+   Resolve this relative reference against service_base_uri.
 
    Purpose:
 
@@ -581,13 +637,17 @@ Table of Contents
    declaration can still establish association if it can retrieve and
    acknowledge the applicable policy instance.
 
-   The request body MUST be a Device Declaration Object.
+   The request body MUST be a Device Declaration Object.  See Device
+   Declaration Object and Declaration Statement Object below for the
+   precise object shape.
 
    A declaration carries one or more descriptive statements that use the
    taxonomy dimensions defined in [I-D.draft-dsmullen-ppd-taxonomy],
-   such as data type, purpose, action, source, and destination.  The
-   taxonomy document defines the meaning and composition of those
-   dimensions.
+   such as data type, purpose, action, source, and handling context.  In
+   this model, handling context means the context in which a dataflow
+   occurs or into which it is directed; it is not limited to transfer
+   destinations.  The taxonomy document defines the meaning and
+   composition of those dimensions.
 
    A successful declaration response without comparison detail SHOULD
    use 204 No Content.  When the service chooses to expose the result of
@@ -601,7 +661,11 @@ Table of Contents
 
 6.5.  Effective Policy Retrieval
 
-6.5.1.  GET /ppd/v1/policy/effective/{device_id}
+6.5.1.  GET policy/effective/{device_id}
+
+   Resolve this relative reference against service_base_uri.  The
+   {device_id} template value MUST be percent-encoded as a single URI
+   path segment before the reference is resolved.
 
    Purpose:
 
@@ -614,7 +678,9 @@ Table of Contents
    *  communicate the association-freshness limit for current
       association.
 
-   A successful response MUST be an Effective Policy Object.
+   A successful response MUST be an Effective Policy Object.  See
+   Effective Policy Object and Policy Rule Object below for the precise
+   object shape.
 
    A successful response SHOULD include policy-instance provenance
    fields that let later inspection distinguish the household baseline
@@ -636,7 +702,9 @@ Table of Contents
 
 6.6.  Policy Acknowledgment
 
-6.6.1.  POST /ppd/v1/device/ack
+6.6.1.  POST device/ack
+
+   Resolve this relative reference against service_base_uri.
 
    Purpose:
 
@@ -694,10 +762,12 @@ Table of Contents
    terms are declared through the applicable taxonomy context and remain
    reducible to the shared core semantic model defined by the companion
    taxonomy work.  For roles such as data_type, purpose, source,
-   destination, processing_boundary, and scoped jurisdiction, that
-   reduction can rely on equivalence or broader/narrower placement as
-   defined by the taxonomy.  For the flat action family, the reduction
-   needs to preserve exact action meaning.
+   handling_context, and processing_boundary, that reduction can rely on
+   equivalence or broader/narrower placement as defined by the taxonomy.
+   For the flat action family, the reduction needs to preserve exact
+   action meaning.  For structured jurisdiction, the reduction needs to
+   preserve the declared scope and the family-specific country or
+   subdivision comparison model defined by the taxonomy.
 
    For baseline interoperability, a compact term identifier MUST use the
    form prefix:term.  The prefix identifies either a reserved core
@@ -760,8 +830,10 @@ Table of Contents
    The service metadata object describes a candidate endpoint before
    deeper interaction.  It contains:
 
-   *  service_uri (required, URI string): canonical participant-facing
-      service URI;
+   *  service_base_uri (required, absolute HTTP or HTTPS URI): API base
+      URI for the advertised protocol version, with the same scheme,
+      host, and effective port as the candidate origin, a path ending in
+      /, and no userinfo, query, or fragment;
 
    *  protocol_version (required, text): protocol version or profile
       identifier for the participant-facing contract;
@@ -781,6 +853,10 @@ Table of Contents
       reproducibility.  These release identifiers are secondary
       validation context, not the primary semantic hook for taxonomy-
       bearing terms.
+
+   A participant evaluates security_profile from this object as part of
+   deciding whether it can continue with the candidate endpoint under
+   the applicable deployment trust model.
 
 7.5.  Device Registration Object
 
@@ -822,19 +898,23 @@ Table of Contents
 
 7.7.  Device Declaration Object
 
-   The declaration object carries participant-supplied capability or
-   data-handling information.  At minimum it contains device_id,
+   The declaration object carries participant-supplied descriptive
+   dataflow information.  At minimum it contains device_id,
    declaration_id, and a non-empty statements array.  Declaration
    statements use the shared taxonomy dimensions defined in
    [I-D.draft-dsmullen-ppd-taxonomy].  The taxonomy document defines the
-   meaning of those roles, the qualifier families used with them, and
+   meaning of those fields, the qualifier families used with them, and
    the core semantic floor that keeps comparison computable across
    richer vocabularies; this protocol document defines only how such
-   statements are carried.  The baseline declaration is intentionally
-   minimal.  Registration carries participant identity, declarations
-   carry descriptive participant assertions, and Effective Policy and
-   Acknowledgment Objects carry the lifecycle-critical policy binding
-   and freshness semantics.
+   statements are carried.  This document uses operation for
+   participant-facing protocol exchanges such as registration,
+   retrieval, and acknowledgment.  Terms such as handling, processing,
+   and dataflow inside declaration statements and policy rules have the
+   meanings defined by the companion taxonomy specification.  The
+   baseline declaration is intentionally minimal.  Registration carries
+   participant identity, declarations carry descriptive participant
+   assertions, and Effective Policy and Acknowledgment Objects carry the
+   lifecycle-critical policy binding and freshness semantics.
 
    The declaration is descriptive only.  It MUST NOT include normative
    policy verdicts such as allow or deny.
@@ -851,8 +931,8 @@ Table of Contents
       any required non-core prefix declarations;
 
    *  statements (required, non-empty array of Declaration Statement
-      Objects): participant-supplied descriptive cases stating which
-      taxonomy-defined combinations apply to this participant.
+      Objects): participant-supplied descriptive dataflow cases stating
+      which taxonomy- defined combinations apply to this participant.
 
    If a declaration uses any non-core compact prefix in its statements
    or constraints, the taxonomy object is REQUIRED.
@@ -873,32 +953,76 @@ Table of Contents
    *  data_type (required, compact term identifier): data category to
       which the statement applies;
 
-   *  purpose (required, compact term identifier): purpose associated
-      with the described handling;
+   *  purpose (required, compact term identifier): why the dataflow
+      occurs;
 
-   *  action (required, compact term identifier): handling action the
-      participant performs or may request;
+   *  action (required, compact term identifier): which privacy-relevant
+      action the participant performs or may request;
 
-   *  source (required, compact term identifier): source context for the
-      handled data;
+   *  source (required, compact term identifier): immediate origin of
+      the data in that dataflow;
 
-   *  destination (required, compact term identifier): destination or
-      handling target described by the participant; and
+   *  handling_context (required, compact term identifier): context in
+      which the dataflow occurs or into which it is directed.  For
+      collection, this identifies the context into which collected data
+      is brought.  For use and inference, it identifies the context in
+      which that dataflow occurs.  For transfer, it identifies the
+      recipient-side context into which data is transferred.  The
+      semantic meaning of this field is defined by
+      [I-D.draft-dsmullen-ppd-taxonomy]; and
 
    *  constraints (optional, Constraints Object): structured qualifiers
       that refine the statement.
 
+7.8.1.  Example Device Declaration Object
+
+   {
+     "device_id": "doorbell-7",
+     "declaration_id": "doorbell-7-declaration-v1",
+     "taxonomy": {
+       "release": "ppd-core-2026-05"
+     },
+     "statements": [
+       {
+         "statement_id": "content-security-local-use",
+         "data_type": "ppd:contentData",
+         "purpose": "ppd:security",
+         "action": "ppd:use",
+         "source": "ppd:participantObserved",
+         "handling_context": "ppd:householdContext",
+         "constraints": {
+           "processing_boundary": "ppd:onDeviceOnly"
+         }
+       },
+       {
+         "statement_id": "sensor-improvement-transfer",
+         "data_type": "ppd:sensorData",
+         "purpose": "ppd:analyticsAndImprovement",
+         "action": "ppd:transfer",
+         "source": "ppd:participantObserved",
+         "handling_context": "ppd:vendorContext",
+         "constraints": {
+           "retention": "ppd:indefinite",
+           "jurisdiction": {
+             "scope": "transfer",
+             "countrycode": ["us"]
+           }
+         }
+       }
+     ]
+   }
+
 7.9.  Comparison Outcome Object
 
    The comparison outcome object carries an optional coarse result for
-   declaration-to-policy comparison on the declaration path.  It is
-   diagnostic and descriptive.  It reports a coarse result of comparing
-   participant-side atomic declaration statements against household-side
-   atomic policy rules.  It does not change the meaning of the Effective
-   Policy Object and it is not part of acknowledgment semantics.  It
-   MUST NOT be treated as a request for policy relaxation, an invitation
-   to begin a participant-driven bargaining loop, or a trigger for
-   baseline homeowner consent prompting.
+   declaration-to-policy comparison on the declaration path.  It reports
+   a coarse diagnostic result of comparing participant-side atomic
+   declaration statements against household-side atomic policy rules.
+   It does not change the meaning of the Effective Policy Object and it
+   is not part of acknowledgment semantics.  It MUST NOT be treated as a
+   request for policy relaxation, an invitation to begin a participant-
+   driven bargaining loop, or a trigger for baseline homeowner consent
+   prompting.
 
    It contains:
 
@@ -911,37 +1035,6 @@ Table of Contents
 
    *  detail (optional, text): brief human-readable explanation suitable
       for diagnostics or operator review.
-
-7.9.1.  Example Device Declaration Object
-
-   {
-     "device_id": "doorbell-7",
-     "declaration_id": "doorbell-7-capability-v1",
-     "taxonomy": {
-       "release": "ppd-core-2026-05"
-     },
-     "statements": [
-       {
-         "statement_id": "video-motion-local",
-         "data_type": "ppd:videoFrame",
-         "purpose": "ppd:motionDetection",
-         "action": "ppd:collection",
-         "source": "ppd:cameraSensor",
-         "destination": "ppd:localProcessing"
-       },
-       {
-         "statement_id": "temperature-product-improvement",
-         "data_type": "ppd:temperatureReading",
-         "purpose": "ppd:productImprovement",
-         "action": "ppd:transfer",
-         "source": "ppd:sensor",
-         "destination": "ppd:vendorCloud",
-         "constraints": {
-           "retention": "ppd:indefinite"
-         }
-       }
-     ]
-   }
 
 7.10.  Effective Policy Object
 
@@ -988,7 +1081,8 @@ Table of Contents
    renewal_interval.  These fields govern association freshness for the
    participant-facing lifecycle.  They do not define abstract policy
    validity outside that lifecycle.  If any rule uses a non-core compact
-   prefix, the taxonomy object is REQUIRED.
+   prefix, the taxonomy object is REQUIRED.  A complete example appears
+   below under Example Effective Policy and Acknowledgment.
 
 7.11.  Policy Rule Object
 
@@ -1007,17 +1101,23 @@ Table of Contents
    *  data_type (required, compact term identifier): data category to
       which the rule applies;
 
-   *  purpose (required, compact term identifier): purpose for which the
-      data handling is considered;
+   *  purpose (required, compact term identifier): why the dataflow
+      occurs;
 
-   *  action (required, compact term identifier): handling action
-      covered by the rule;
+   *  action (required, compact term identifier): which privacy-relevant
+      action the rule covers;
 
-   *  source (required, compact term identifier): source context for the
-      handled data;
+   *  source (required, compact term identifier): immediate origin of
+      the data in that dataflow;
 
-   *  destination (required, compact term identifier): destination or
-      handling target covered by the rule;
+   *  handling_context (required, compact term identifier): context in
+      which the dataflow occurs or into which it is directed.  For
+      collection, this identifies the context into which collected data
+      is brought.  For use and inference, it identifies the context in
+      which that dataflow occurs.  For transfer, it identifies the
+      recipient-side context into which data is transferred.  The
+      semantic meaning of this field is defined by
+      [I-D.draft-dsmullen-ppd-taxonomy];
 
    *  effect (required, text): normative rule effect, currently one of
       allow or deny; and
@@ -1037,19 +1137,42 @@ Table of Contents
    the baseline draft.  It is shared by declaration statements and
    policy rules.  The wire container is named constraints, but the
    companion taxonomy work defines its members as qualifiers on atomic
-   dataflows.
+   dataflows.  [I-D.draft-dsmullen-ppd-taxonomy] also defines the
+   semantic meaning of retention, processing_boundary, and jurisdiction;
+   this document defines only their participant-facing wire
+   representation.
 
    The initial standardized members are:
 
    *  retention (optional, compact term identifier): baseline retention
-      qualifier for the described or allowed or denied handling.  The
-      baseline compact form is term-valued; future specifications or
-      deployment profiles MAY define more structured bounded-retention
-      forms; and
+      qualifier for the scoped dataflow.  The baseline compact form is
+      term-valued; future specifications or deployment profiles MAY
+      define more structured bounded-retention forms.
 
    *  processing_boundary (optional, compact term identifier):
-      processing-placement qualifier for the described or allowed or
-      denied handling.
+      processing-placement qualifier for use or inference within the
+      declared handling context.
+
+   *  jurisdiction (optional, object): declarative jurisdiction
+      qualifier for the scoped dataflow or storage context.
+
+   When present, jurisdiction contains:
+
+   *  scope (required, text): one of collection, use, inference,
+      transfer, or storage;
+
+   *  countrycode (optional, array of text): one or more lowercase
+      country codes using the countrycode format [RFC8006]; and
+
+   *  subdivisioncode (optional, array of text): one or more lowercase
+      country subdivision codes using the subdivisioncode format
+      [RFC9388].
+
+   At least one of countrycode or subdivisioncode MUST be present.  A
+   sender MUST NOT include an empty countrycode or subdivisioncode
+   array.  A receiver MUST treat an unknown scope, a malformed
+   jurisdiction object, or an invalid country or subdivision code as
+   invalid input.
 
    Future specifications or deployment profiles MAY define additional
    structured constraint members.  A Constraints Object MUST NOT be
@@ -1117,11 +1240,11 @@ Table of Contents
      "rules": [
        {
          "rule_id": "r1",
-         "data_type": "ppd:videoFrame",
-         "purpose": "ppd:motionDetection",
+         "data_type": "ppd:contentData",
+         "purpose": "ppd:security",
          "action": "ppd:use",
-         "source": "ppd:cameraSensor",
-         "destination": "ppd:localProcessing",
+         "source": "ppd:participantObserved",
+         "handling_context": "ppd:householdContext",
          "effect": "allow",
          "constraints": {
            "processing_boundary": "ppd:onDeviceOnly"
@@ -1147,15 +1270,18 @@ Table of Contents
 
 7.15.  Error Object
 
-   Error responses SHOULD use application/problem+json and a structured
-   error object with at least:
+   Error responses SHOULD use Problem Details for HTTP APIs [RFC9457]
+   with the Content-Type: application/problem+json header field.  An
+   error response using this format MUST conform to RFC 9457 and include
+   at least:
 
    *  type: problem type identifier, including PPD-specific problem
       types when applicable;
 
    *  title: short problem summary;
 
-   *  status: HTTP status code for this error; and
+   *  status: HTTP status code for this error, which MUST match the
+      actual HTTP response status; and
 
    *  detail: human-readable explanation when useful.
 
@@ -1169,23 +1295,31 @@ Table of Contents
    than is necessary to explain the failure.
 
    For PPD-specific problems, the type member SHOULD be one of the
-   following relative references:
+   following absolute URIs:
 
-   *  invalid-request
+   *  https://iana.org/assignments/http-problem-types#ppd-invalid-
+      request
 
-   *  invalid-participant-binding
+   *  https://iana.org/assignments/http-problem-types#ppd-invalid-
+      participant-binding
 
-   *  reassociation-required
+   *  https://iana.org/assignments/http-problem-types#ppd-reassociation-
+      required
 
-   *  stale-association
+   *  https://iana.org/assignments/http-problem-types#ppd-stale-
+      association
 
-   *  policy-instance-mismatch
+   *  https://iana.org/assignments/http-problem-types#ppd-policy-
+      instance-mismatch
 
-   *  unsupported-taxonomy-term
+   *  https://iana.org/assignments/http-problem-types#ppd-unsupported-
+      taxonomy-term
 
-   *  term-resolution-failed
+   *  https://iana.org/assignments/http-problem-types#ppd-term-
+      resolution-failed
 
-   *  policy-authority-unavailable
+   *  https://iana.org/assignments/http-problem-types#ppd-policy-
+      authority-unavailable
 
 8.  Error Handling
 
@@ -1219,6 +1353,11 @@ Table of Contents
    *  other 5xx errors for unexpected service failures.
 
    The initial PPD-specific problem vocabulary is:
+
+   The short labels below describe the problems; they are not values for
+   the Problem Details type member.  When a PPD-specific problem type is
+   used, the type member carries the corresponding absolute URI listed
+   above.
 
    *  invalid-request: malformed request payload, missing required
       fields, or invalid field shape;
@@ -1328,7 +1467,60 @@ Table of Contents
 
 11.  IANA Considerations
 
-   This document has no IANA actions.
+   This document requests registration of the following problem types in
+   the HTTP Problem Types registry [RFC9457]:
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      invalid-request Title: PPD Invalid Request Recommended HTTP Status
+      Code: 400 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      invalid-participant-binding Title: PPD Invalid Participant Binding
+      Recommended HTTP Status Code: 401 or 403, as specified in this
+      document Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      reassociation-required Title: PPD Reassociation Required
+      Recommended HTTP Status Code: 409 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      stale-association Title: PPD Stale Association Recommended HTTP
+      Status Code: 409 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      policy-instance-mismatch Title: PPD Policy Instance Mismatch
+      Recommended HTTP Status Code: 409 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      unsupported-taxonomy-term Title: PPD Unsupported Taxonomy Term
+      Recommended HTTP Status Code: 422 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      term-resolution-failed Title: PPD Term Resolution Failed
+      Recommended HTTP Status Code: 422 Reference: This document
+
+   *  Type URI: https://iana.org/assignments/http-problem-types#ppd-
+      policy-authority-unavailable Title: PPD Policy Authority
+      Unavailable Recommended HTTP Status Code: 503 Reference: This
+      document
+
+   This document requests registration of the following URI suffix in
+   the Well-Known URI Registry [RFC8615]:
+
+   *  URI suffix: ppd
+
+   *  Change controller: IETF
+
+   *  Specification document(s): This document
+
+   *  Status: permanent
+
+   *  URI schemes: http, https
+
+   *  Related information: A GET request to /.well-known/ppd returns a
+      Service Metadata Object using application/json.  The object
+      identifies the participant-facing PPD API base URI for the
+      advertised protocol version.
 
 12.  References
 
@@ -1339,25 +1531,43 @@ Table of Contents
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2119>.
 
+   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
+              Resource Identifier (URI): Generic Syntax", STD 66,
+              RFC 3986, DOI 10.17487/RFC3986, January 2005,
+              <https://www.rfc-editor.org/rfc/rfc3986>.
+
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC8615]  Nottingham, M., "Well-Known Uniform Resource Identifiers
+              (URIs)", RFC 8615, DOI 10.17487/RFC8615, May 2019,
+              <https://www.rfc-editor.org/rfc/rfc8615>.
+
+   [RFC9110]  Fielding, R., Ed., Nottingham, M., Ed., and J. Reschke,
+              Ed., "HTTP Semantics", STD 97, RFC 9110,
+              DOI 10.17487/RFC9110, June 2022,
+              <https://www.rfc-editor.org/rfc/rfc9110>.
+
+   [RFC9457]  Nottingham, M., Wilde, E., and S. Dalal, "Problem Details
+              for HTTP APIs", RFC 9457, DOI 10.17487/RFC9457, July 2023,
+              <https://www.rfc-editor.org/rfc/rfc9457>.
 
 12.2.  Informative References
 
    [I-D.draft-dsmullen-ppd-architecture]
               Smullen, D. and B. Scriber, "Privacy Preference
               Declaration for Home Networks", Work in Progress,
-              Internet-Draft, draft-dsmullen-ppd-architecture-07, 20 May
+              Internet-Draft, draft-dsmullen-ppd-architecture-10, 22 May
               2026, <https://datatracker.ietf.org/doc/html/draft-
-              dsmullen-ppd-architecture-07>.
+              dsmullen-ppd-architecture-10>.
 
    [I-D.draft-dsmullen-ppd-taxonomy]
               Smullen, D. and B. Scriber, "Privacy Preference
               Declaration Taxonomy", Work in Progress, Internet-Draft,
-              draft-dsmullen-ppd-taxonomy-03, 18 May 2026,
+              draft-dsmullen-ppd-taxonomy-05, 22 May 2026,
               <https://datatracker.ietf.org/doc/html/draft-dsmullen-ppd-
-              taxonomy-03>.
+              taxonomy-05>.
 
    [RFC3339]  Klyne, G. and C. Newman, "Date and Time on the Internet:
               Timestamps", RFC 3339, DOI 10.17487/RFC3339, July 2002,
@@ -1373,10 +1583,21 @@ Table of Contents
               RFC 7564, DOI 10.17487/RFC7564, May 2015,
               <https://www.rfc-editor.org/rfc/rfc7564>.
 
+   [RFC8006]  Niven-Jenkins, B., Murray, R., Caulfield, M., and K. Ma,
+              "Content Delivery Network Interconnection (CDNI)
+              Metadata", RFC 8006, DOI 10.17487/RFC8006, December 2016,
+              <https://www.rfc-editor.org/rfc/rfc8006>.
+
    [RFC8785]  Rundgren, A., Jordan, B., and S. Erdtman, "JSON
               Canonicalization Scheme (JCS)", RFC 8785,
               DOI 10.17487/RFC8785, June 2020,
               <https://www.rfc-editor.org/rfc/rfc8785>.
+
+   [RFC9388]  Sopher, N. and S. Mishra, "Content Delivery Network
+              Interconnection (CDNI) Footprint Types: Country
+              Subdivision Code and Footprint Union", RFC 9388,
+              DOI 10.17487/RFC9388, July 2023,
+              <https://www.rfc-editor.org/rfc/rfc9388>.
 
 Authors' Addresses
 
