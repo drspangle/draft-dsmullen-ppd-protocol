@@ -20,10 +20,10 @@ side.
 
 The main response-shape questions are:
 
-- what `POST /ppd/v1/device/register` returns on success
-- what `POST /ppd/v1/device/declaration` returns on success when no comparison
-  outcome is returned
-- what `POST /ppd/v1/device/ack` returns on success
+- what the registration operation returns on success
+- what the declaration operation returns on success when no comparison outcome
+  is returned
+- what the acknowledgment operation returns on success
 
 ### Registration Result Decision
 
@@ -38,8 +38,8 @@ Reasoning:
 - the purpose of registration is to bind participant identity at the service
 - returning only the canonical `device_id` makes that identity binding
   explicit
-- repeating `service_uri` or other endpoint metadata would blur registration
-  result semantics with metadata confirmation
+- repeating `service_base_uri` or other endpoint metadata would blur
+  registration-result semantics with metadata confirmation
 - baseline registration is not trying to redirect the participant onto a
   different canonical endpoint
 

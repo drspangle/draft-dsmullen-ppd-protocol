@@ -1,13 +1,18 @@
 ---
 title: "Privacy Preference Declaration Protocol Specification"
 abbrev: "PPDProt"
-category: info
+category: std
 
 docname: draft-dsmullen-ppd-protocol-latest
 number:
 date:
 consensus: false
 v: 3
+normative:
+  RFC3986:
+  RFC8615:
+  RFC9110:
+  RFC9457:
 keyword:
  - privacy preferences
  - home networks
@@ -160,8 +165,17 @@ The baseline end-to-end story is therefore:
 The baseline participant-facing protocol uses:
 
 * HTTP over IP;
-* the path prefix `/ppd/v1`; and
 * JSON request and response bodies using `application/json`.
+
+HTTP method, status-code, and representation semantics follow RFC 9110
+{{RFC9110}} unless this document specifies otherwise.
+Any message body containing a PPD request or successful response object MUST
+use `Content-Type: application/json`.
+
+The protocol does not prescribe a fixed deployment path for its API.
+The participant discovers the API base URI through the origin-level
+well-known resource defined below, and resolves the operation references
+against that base URI using {{RFC3986}}.
 
 This document treats JSON as the baseline interoperable encoding.
 More compact encodings MAY be defined by future deployment profiles where
@@ -216,12 +230,17 @@ extensions.
 
 ## Candidate Discovery and Metadata Confirmation
 
-Every participant MUST support a configured or provisioned participant-facing
-PPD service endpoint.
+Every participant MUST support a configured or provisioned candidate PPD
+service origin.
 That is the minimum interoperable discovery floor.
+A candidate origin is an HTTP or HTTPS URI identifying a scheme, host, and
+optional port; a non-default port MUST be explicit.
+It MUST NOT contain user information, a non-root path, a query, or a fragment.
+A discovery profile that yields only a hostname MUST define how the scheme and
+port are selected.
 
 This protocol does not standardize one universal automatic discovery mechanism.
-Participants MAY additionally learn candidate PPD service endpoints through
+Participants MAY additionally learn candidate PPD service origins through
 local naming, DHCP-delivered hints, multicast service discovery,
 default-gateway probing, Wi-Fi onboarding hints, or comparable local-network
 mechanisms.
@@ -230,23 +249,46 @@ requires them.
 A discovery profile MAY define an ordered candidate sequence for a deployment
 or participant class, but this protocol does not require one universal
 automatic sequence.
-Discovery yields candidate endpoints only; it does not establish authority.
+Discovery yields candidate origins only; it does not establish authority.
 
-A participant that learns a candidate endpoint through any discovery method
+A participant that learns a candidate origin through any discovery method
 MUST confirm that the endpoint supports this protocol before deeper
 interaction.
-For that purpose, the baseline protocol defines:
+For an HTTP or HTTPS candidate origin, the participant retrieves the Service
+Metadata Object from the origin-level well-known URI `/.well-known/ppd`,
+defined in accordance with {{RFC8615}}.
+The well-known URI confirms the PPD service and advertises its API base URI;
+it does not require the API itself to be mounted at the origin root.
+Retrieving the metadata confirms protocol support but does not establish
+endpoint authority or trust.
 
-* `GET /ppd/v1/meta`
+The Service Metadata Object MUST include a `service_base_uri` identifying the
+API base URI for the advertised protocol version.
+It MUST be an absolute HTTP or HTTPS URI whose scheme, host, and effective
+port match the candidate origin, with a path ending in `/` and no userinfo,
+query, or fragment component.
+The path MAY include any deployment-selected prefix, including a version
+segment.
+Operation references defined below are relative URI references and MUST be
+resolved against `service_base_uri` according to {{RFC3986}}.
 
-The metadata response is expected to identify at least:
+For example, if the candidate origin is `https://home.example:8443` and the
+metadata advertises `https://home.example:8443/home/ppd/v1/`, resolving the
+relative reference `device/register` yields
+`https://home.example:8443/home/ppd/v1/device/register`.
 
-* the participant-facing service URI;
-* the protocol version or profile identifier;
-* the taxonomy release or releases understood by the service;
-* whether participant declarations are supported;
-* whether protected acknowledgments are supported; and
-* the expected security mode or trust profile.
+The metadata response MUST include the following fields:
+
+* `service_base_uri`, identifying the participant-facing API base URI;
+* `protocol_version`, identifying the protocol version or profile;
+* `declaration_supported`, indicating whether participant declarations are
+  supported;
+* `ack_supported`, indicating whether protected acknowledgments are
+  supported; and
+* `security_profile`, identifying the expected deployment security profile.
+
+The response MAY also include `supported_taxonomy_releases` to identify
+taxonomy releases understood by the service.
 
 The metadata response MUST NOT expose household policy contents, participant
 inventory, or acknowledgment history before the normal participant-facing trust
@@ -260,10 +302,10 @@ an internal repository or policy-authority endpoint.
 
 The baseline participant lifecycle is:
 
-1. obtain one or more candidate PPD service endpoints;
-2. confirm a selected endpoint using `GET /ppd/v1/meta`;
-3. authenticate the selected endpoint according to the deployment's trust
-   profile;
+1. obtain one or more candidate PPD service origins;
+2. retrieve metadata from `GET /.well-known/ppd` on a selected origin;
+3. authenticate the advertised service endpoint according to the deployment's
+   trust profile;
 4. register participant identity and metadata;
 5. optionally submit a participant declaration;
 6. retrieve the current applicable effective policy instance; and
@@ -291,7 +333,8 @@ one of the following:
 For baseline interoperability, the minimum renewal procedure is:
 
 1. the participant retrieves the current applicable effective policy instance
-   using `GET /ppd/v1/policy/effective/{device_id}`;
+   using the relative reference `policy/effective/{device_id}` resolved
+   against `service_base_uri`;
 2. if the returned `policy_id` and `policy_hash` still identify the same policy
    instance the participant currently treats as associated, the participant
    renews by sending a fresh Policy Acknowledgment Object for that instance; and
@@ -369,11 +412,14 @@ It does not define a universal resolution procedure.
 
 The baseline participant-facing operation set is:
 
-1. `GET /ppd/v1/meta`
-2. `POST /ppd/v1/device/register`
-3. `POST /ppd/v1/device/declaration` (optional)
-4. `GET /ppd/v1/policy/effective/{device_id}`
-5. `POST /ppd/v1/device/ack`
+1. `GET /.well-known/ppd` on the candidate origin
+2. `POST device/register` relative to `service_base_uri`
+3. `POST device/declaration` relative to `service_base_uri` (optional)
+4. `GET policy/effective/{device_id}` relative to `service_base_uri`
+5. `POST device/ack` relative to `service_base_uri`
+
+The operation references in this list are relative URI references, not
+origin-root paths.
 
 These operations form a narrow control path.
 They let a device-side participant confirm the home-side service, identify
@@ -394,7 +440,10 @@ operator-only status endpoints.
 
 ## Metadata Confirmation
 
-### `GET /ppd/v1/meta`
+### `GET /.well-known/ppd`
+
+This request targets the root-level well-known URI on a candidate origin.
+It is defined for the `http` and `https` URI schemes.
 
 Purpose:
 
@@ -402,11 +451,14 @@ Purpose:
 * advertise baseline feature support; and
 * communicate security expectations before registration or policy retrieval.
 
-A successful response MUST be a Service Metadata Object.
+A successful response MUST include a Service Metadata Object and the
+`Content-Type: application/json` header field.
 
 ## Registration
 
-### `POST /ppd/v1/device/register`
+### `POST device/register`
+
+Resolve this relative reference against `service_base_uri`.
 
 Purpose:
 
@@ -437,7 +489,9 @@ service URI, supported feature flags, or security profile.
 
 ## Declaration
 
-### `POST /ppd/v1/device/declaration`
+### `POST device/declaration`
+
+Resolve this relative reference against `service_base_uri`.
 
 Purpose:
 
@@ -471,7 +525,11 @@ baseline negotiation or homeowner-prompt channel.
 
 ## Effective Policy Retrieval
 
-### `GET /ppd/v1/policy/effective/{device_id}`
+### `GET policy/effective/{device_id}`
+
+Resolve this relative reference against `service_base_uri`.
+The `{device_id}` template value MUST be percent-encoded as a single URI path
+segment before the reference is resolved.
 
 Purpose:
 
@@ -503,7 +561,9 @@ full derivation algorithm.
 
 ## Policy Acknowledgment
 
-### `POST /ppd/v1/device/ack`
+### `POST device/ack`
+
+Resolve this relative reference against `service_base_uri`.
 
 Purpose:
 
@@ -623,8 +683,10 @@ The service metadata object describes a candidate endpoint before deeper
 interaction.
 It contains:
 
-* `service_uri` (required, URI string):
-  canonical participant-facing service URI;
+* `service_base_uri` (required, absolute HTTP or HTTPS URI):
+  API base URI for the advertised protocol version, with the same scheme,
+  host, and effective port as the candidate origin, a path ending in `/`, and
+  no userinfo, query, or fragment;
 * `protocol_version` (required, text):
   protocol version or profile identifier for the participant-facing contract;
 * `declaration_supported` (required, boolean):
@@ -1091,10 +1153,10 @@ At minimum, participants need to handle:
 * other `5xx` errors for unexpected service failures.
 
 The initial PPD-specific problem vocabulary is:
+
 The short labels below describe the problems; they are not values for the
 Problem Details `type` member. When a PPD-specific problem type is used, the
 `type` member carries the corresponding absolute URI listed above.
-
 
 * `invalid-request`:
   malformed request payload, missing required fields, or invalid field shape;
@@ -1223,6 +1285,18 @@ HTTP Problem Types registry {{RFC9457}}:
   Title: PPD Policy Authority Unavailable
   Recommended HTTP Status Code: `503`
   Reference: This document
+
+This document requests registration of the following URI suffix in the
+Well-Known URI Registry {{RFC8615}}:
+
+* URI suffix: `ppd`
+* Change controller: IETF
+* Specification document(s): This document
+* Status: permanent
+* URI schemes: `http`, `https`
+* Related information: A `GET` request to `/.well-known/ppd` returns a Service
+  Metadata Object using `application/json`. The object identifies the
+  participant-facing PPD API base URI for the advertised protocol version.
 
 --- normative
 

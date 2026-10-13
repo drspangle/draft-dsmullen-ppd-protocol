@@ -7,7 +7,8 @@ gateway repository, typically checked out locally as
 ## Primary Inputs
 
 - `design/ppd-api.md`
-  - current public `/ppd/v1` surface
+  - current gateway implementation's public `/ppd/v1` surface; this is
+    implementation context, not a protocol requirement for a fixed API path
   - distinction between device-facing, operator-facing, and repository-facing
     APIs
 - `design/protocol/ppd-protocol-spec.md`

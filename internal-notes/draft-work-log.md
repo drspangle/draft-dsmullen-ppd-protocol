@@ -299,3 +299,27 @@ It is not part of the rendered Internet-Draft.
   - the companion-draft follow-up email to IOTOPS was sent after the protocol
     review completed; and
   - end-of-day status is clean locally and pushed to GitHub.
+
+## 2026-10-13
+
+- Replaced the fixed `/ppd/v1` origin-root path assumption with the registered
+  `/.well-known/ppd` metadata bootstrap and a same-origin `service_base_uri`.
+  Protocol operation paths are now relative URI references resolved against
+  that advertised base, allowing deployment-selected API mount prefixes.
+- Added the RFC 8615 well-known registration request, including HTTP/HTTPS
+  schemes. The protocol is intended for the Standards Track, so the request
+  names IETF as change controller and uses permanent status. CableLabs should
+  designate a named technical owner to coordinate ongoing maintenance and
+  standards participation; that role is distinct from the formal IETF change
+  controller. Daniel Smullen is the interim owner for now, pending confirmation
+  with Brian Scriber.
+- Checked the companion drafts: architecture discovery language needs to
+  explain origin-level bootstrap and API-base selection; taxonomy has no HTTP
+  endpoint model and requires no corresponding semantic change.
+- Kept the current security-profile requirements and mechanism flexibility as
+  the proposal for acceptance review. Further specificity is deferred unless
+  reviewers identify a concrete interoperability or security gap.
+- Refreshed the local render after adding the RFC 3986, 8615, 9110, and 9457
+  normative references required by the new protocol text. The versioned
+  submission validation completed with zero errors and zero comments; idnits
+  reported one non-fatal `LINE_PI` warning for generated XML line markers.

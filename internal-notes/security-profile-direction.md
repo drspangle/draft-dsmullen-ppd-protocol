@@ -92,6 +92,20 @@ profile boundaries before it becomes specific about one universal mechanism.
 This is not an argument for staying generic forever. It is an argument for
 being specific at the right layer first.
 
+### 2026-10-13 Acceptance Review Posture
+
+Keep the current security-profile specificity in the draft for the acceptance
+process. The draft already defines its authenticated participation floor and
+distinguishes the baseline direct-device profiles from the backend-mediated
+extension. Do not add a mandatory credential mechanism or expand the profile
+requirements preemptively in this revision.
+
+Treat concrete reviewer feedback as the trigger for further changes. If an
+acceptance reviewer identifies a specific interoperability or security gap,
+assess that concern and revise the relevant profile text as needed. This is a
+deliberate sequencing decision, not a claim that the current profile model is
+final or beyond review.
+
 ### Authenticated Participant Classes
 
 The authenticated side should correspond to broad participant classes that
